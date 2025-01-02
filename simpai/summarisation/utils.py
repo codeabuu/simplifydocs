@@ -2,6 +2,12 @@ from PyPDF2 import PdfReader
 from openai import OpenAI
 from decouple import config
 
+SUMMARIZATION_PROMPTS = {
+    "professional_audience": "Condense this text into a summary suitable for a professional audience, retaining technical details.",
+    "qa_format": "Summarize this document in a Q&A format with the most critical questions answered concisely.",
+    "simple_summary": "Provide a simple and concise summary of this document.",
+}
+
 def extract_text_from_pdf(file_path: str) -> str:
     """
         Extracts text from a given PDF file.
@@ -22,7 +28,7 @@ def extract_text_from_pdf(file_path: str) -> str:
     except Exception as e:
         raise ValueError(f"Failed to extract text from PDF: {e}")
     
-def summarize_text(text):
+def summarize_text(text, prompt_key="simple_summary") -> str:
     """
         Summarizes the given text using the DeepSeek API.
 
@@ -37,7 +43,7 @@ def summarize_text(text):
             api_key=config("DEEPSEEK_API_KEY"),
             base_url="https://api.deepseek.com"
             )
-
+        prompt=SUMMARIZATION_PROMPTS.get(prompt_key, SUMMARIZATION_PROMPTS["simple_summary"])
         #call deepseeks summarisation api
         response = client.chat.completions.create(
             model="deepseek-chat",
@@ -45,7 +51,7 @@ def summarize_text(text):
                 {"role": "system",
                 "content": "You are a helpful assistant that summarizes: "},
                 {"role": "user",
-                "content": f"Create a bullet-point summary for each chapter or section of this PDF, focusing on the most critical details.:\n{text}"},
+                "content": f"{prompt}\n{text}"},
                 ],
                 stream=False
         )

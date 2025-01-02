@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from .models import UploadedFile
 from .serializers import UploadedFileSerializer
 from .utils import extract_text_from_pdf, summarize_text
-#from .pdfgen import generate_pdf
-# import os
-# from django.conf import settings
-# from django.http import FileResponse
+from .pdfgen import generate_pdf
+import os
+from django.conf import settings
+from django.http import FileResponse
 
 class FileUploadView(APIView):
     parser_classes = [MultiPartParser]
@@ -20,8 +20,17 @@ class FileUploadView(APIView):
 
             #extract text
             text=extract_text_from_pdf(file_path)
-            summary = summarize_text(text)
+            prompt_key = request.data.get('prompt_key', 'simple_summary')
+            summary = summarize_text(text, prompt_key) #summarise text
 
-            return Response({"summary": summary}, status=200)
+            pdf_path = os.path.join(settings.MEDIA_ROOT, f'{uploaded_file.file.name}.pdf')
+            generate_pdf(summary, pdf_path)
+
+            with open(pdf_path, 'rb') as file:
+                uploaded_file.file.save(f'{uploaded_file.file.name}.pdf', file)
+            #server pdf for download
+            response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}.pdf"'
+            return response
         else:
             return Response(file_serializer.errors, status=400)
