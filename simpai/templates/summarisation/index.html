@@ -78,23 +78,49 @@
             color: #007BFF;
             display: none;  /* Hide the "Loading content" message initially */
         }
+        #introMessage {
+            margin-top: 20px;
+            color: #555;
+        }
+        #uploadSection {
+            margin-top: 20px;
+        }
+        #customPromptSection {
+            margin-top: 20px;
+            display: none;  /* Hide the custom prompt section initially */
+        }
     </style>
 </head>
 <body>
     <h1>PDF Summarization</h1>
-    <form id="uploadForm">
-        <input type="file" id="fileInput" name="file" accept=".pdf" required>
+
+    <!-- Introductory Message -->
+    <div id="introMessage">
+        <p>Welcome to the PDF Summarization tool! Please upload a document to get started.</p>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="uploadSection">
+        <input type="file" id="fileInput" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
         <br>
+        <button type="button" onclick="handleFileUpload()">Upload Document</button>
+    </div>
+
+    <!-- Custom Prompt Section -->
+    <div id="customPromptSection">
+        <h2>Ask a Question About the Document</h2>
+        <input type="text" id="customPrompt" placeholder="Enter your question or prompt">
+        <button type="button" onclick="askQuestion()">Ask</button>
+    </div>
+
+    <!-- Summarization Options (Only for PDF) -->
+    <div id="summarizationOptions" style="display: none;">
+        <h2>Summarization Options</h2>
         <button type="button" onclick="uploadFile('professional_audience')">Professional Audience</button>
         <button type="button" onclick="uploadFile('qa_format')">Q&A Format</button>
         <button type="button" onclick="uploadFile('simple_summary')">Simple Summary</button>
         <button type="button" onclick="uploadFile('bullet_points')">Bullet Points</button>
-    </form>
-
-    <!-- Custom Prompt Section -->
-    <h2>Ask a Question About the Document</h2>
-    <input type="text" id="customPrompt" placeholder="Enter your question or prompt">
-    <button type="button" onclick="askQuestion()">Ask</button>
+    </div>
 
     <!-- Loading Message and Progress Bar -->
     <div id="loading">Please wait, processing your request...</div>
@@ -107,26 +133,52 @@
     <div id="output"></div>
 
     <!-- Buttons for Custom Prompt Output -->
-    <button id="saveAsPDFButton" onclick="saveAsPDF()">Save as PDF</button>
-    <button id="previewPDFButton" onclick="previewPDF()">Preview as PDF</button>
-    <button id="cancelOutputButton" onclick="cancelOutput()">Cancel</button>
+    <button id="saveAsPDFButton" onclick="saveAsPDF()" style="display: none;">Save as PDF</button>
+    <button id="previewPDFButton" onclick="previewPDF()" style="display: none;">Preview as PDF</button>
+    <button id="cancelOutputButton" onclick="cancelOutput()" style="display: none;">Cancel</button>
 
     <!-- PDF Previews -->
     <iframe id="pdfPreview" src="" frameborder="0"></iframe>
     <iframe id="customPromptPDFPreview" src="" frameborder="0"></iframe>
 
     <!-- Download Button -->
-    <button id="downloadButton" onclick="downloadPDF()">Download Summary</button>
+    <button id="downloadButton" onclick="downloadPDF()" style="display: none;">Download Summary</button>
 
     <script>
         let pdfUrl = null;
         let customPromptResponse = null;
 
+        function handleFileUpload() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a document.");
+                return;
+            }
+
+            // Show the custom prompt section for all file types
+            document.getElementById('customPromptSection').style.display = 'block';
+
+            // Check if the file is a PDF
+            if (file.type === "application/pdf") {
+                // Show summarization options for PDF files
+                document.getElementById('summarizationOptions').style.display = 'block';
+            } else {
+                // Hide summarization options for non-PDF files
+                document.getElementById('summarizationOptions').style.display = 'none';
+            }
+
+            // Hide the introductory message and upload section
+            document.getElementById('introMessage').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'none';
+        }
+
         async function uploadFile(promptKey) {
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
             if (!file) {
-                alert("Please select a PDF file.");
+                alert("Please select a document.");
                 return;
             }
 
@@ -201,7 +253,7 @@
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
             if (!file) {
-                alert("Please select a PDF file.");
+                alert("Please select a document.");
                 return;
             }
 
