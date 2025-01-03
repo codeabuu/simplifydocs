@@ -3,7 +3,12 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from .models import UploadedFile
 from .serializers import UploadedFileSerializer
-from .utils import extract_text_from_pdf, summarize_text, ask_question
+from .utils import (
+    extract_text_from_pdf,
+    summarize_text,
+    ask_question,
+    text_to_speech
+    )
 from .pdfgen import generate_pdf
 import os
 from django.conf import settings
@@ -91,3 +96,60 @@ class AskQuestionView(APIView):
         finally:
             with lock:
                 is_processing = False  # Reset the flag when the process is done
+
+from django.http import FileResponse
+from .utils import text_to_speech
+
+class GenerateOriginalAudioView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            file_serializer = UploadedFileSerializer(data=request.data)
+            if file_serializer.is_valid():
+                uploaded_file = file_serializer.save()
+                file_path = uploaded_file.file.path
+
+                # Extract text from the original PDF
+                text = extract_text_from_pdf(file_path)
+
+                # Convert text to audio
+                audio_path = text_to_speech(text, "original_audio")
+
+                # Serve the audio file
+                response = FileResponse(open(audio_path, 'rb'), content_type='audio/mpeg')
+                response['Content-Disposition'] = f'attachment; filename="original_audio.mp3"'
+                return response
+            else:
+                return Response(file_serializer.errors, status=400)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+class GenerateSummaryAudioView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            file_serializer = UploadedFileSerializer(data=request.data)
+            if file_serializer.is_valid():
+                uploaded_file = file_serializer.save()
+                file_path = uploaded_file.file.path
+
+                # Extract text from the original PDF
+                text = extract_text_from_pdf(file_path)
+
+                # Summarize the text
+                prompt_key = request.data.get('prompt_key', 'simple_summary')
+                summary = summarize_text(text, prompt_key)
+
+                # Convert summary to audio
+                audio_path = text_to_speech(summary, "summary_audio")
+
+                # Serve the audio file
+                response = FileResponse(open(audio_path, 'rb'), content_type='audio/mpeg')
+                response['Content-Disposition'] = f'attachment; filename="summary_audio.mp3"'
+                return response
+            else:
+                return Response(file_serializer.errors, status=400)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

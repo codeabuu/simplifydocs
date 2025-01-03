@@ -89,6 +89,11 @@
             margin-top: 20px;
             display: none;  /* Hide the custom prompt section initially */
         }
+        #uploadedFileName {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #007BFF;
+        }
     </style>
 </head>
 <body>
@@ -108,6 +113,7 @@
 
     <!-- Custom Prompt Section -->
     <div id="customPromptSection">
+        <div id="uploadedFileName"></div> <!-- Display uploaded file name here -->
         <h2>Ask a Question About the Document</h2>
         <input type="text" id="customPrompt" placeholder="Enter your question or prompt">
         <button type="button" onclick="askQuestion()">Ask</button>
@@ -156,6 +162,10 @@
                 alert("Please select a document.");
                 return;
             }
+
+            // Display the uploaded file name in the custom prompt section
+            const uploadedFileNameDiv = document.getElementById('uploadedFileName');
+            uploadedFileNameDiv.textContent = `Uploaded file: ${file.name}`;
 
             // Show the custom prompt section for all file types
             document.getElementById('customPromptSection').style.display = 'block';

@@ -1,6 +1,10 @@
 from PyPDF2 import PdfReader
 from openai import OpenAI
 from decouple import config
+from gtts import gTTS
+import os
+from django.conf import settings
+from decouple import config
 
 SUMMARIZATION_PROMPTS = {
     "professional_audience": "Condense this text into a summary suitable for a professional audience, retaining technical details.",
@@ -74,3 +78,12 @@ def ask_question(text, question):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error answering question: {str(e)}"
+    
+def text_to_speech(text, filename):
+    try:
+        tts = gTTS(text=text, lang='en')
+        audio_path = os.path.join(settings.MEDIA_ROOT, f"{filename}.mp3")
+        tts.save(audio_path)
+        return audio_path
+    except Exception as e:
+        raise ValueError(f"Failed to convert text to speech: {e}")
