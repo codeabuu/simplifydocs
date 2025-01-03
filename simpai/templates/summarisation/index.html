@@ -32,15 +32,46 @@
         button:hover {
             background-color: #0056b3;
         }
-        #pdfPreview {
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #pdfPreview, #customPromptPDFPreview {
             margin-top: 20px;
             width: 100%;
             height: 500px;
             border: 1px solid #ccc;
+            display: none;  /* Hide the preview boxes initially */
         }
-        #downloadButton {
-            display: none;  /* Hide the download button initially */
+        #downloadButton, #saveAsPDFButton, #previewPDFButton, #cancelOutputButton {
+            display: none;  /* Hide buttons initially */
             margin-top: 10px;
+        }
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            display: none;  /* Hide the output initially */
+        }
+        #loading {
+            margin-top: 10px;
+            color: #007BFF;
+            display: none;  /* Hide the loading message initially */
+        }
+        #progressBarContainer {
+            margin-top: 10px;
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            display: none;  /* Hide the progress bar initially */
+        }
+        #progressBar {
+            width: 0%;
+            height: 10px;
+            background-color: #007BFF;
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -60,14 +91,30 @@
     <input type="text" id="customPrompt" placeholder="Enter your question or prompt">
     <button type="button" onclick="askQuestion()">Ask</button>
 
-    <!-- PDF Preview -->
+    <!-- Loading Message and Progress Bar -->
+    <div id="loading">Please wait, processing your request...</div>
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+    </div>
+
+    <!-- Output Display -->
+    <div id="output"></div>
+
+    <!-- Buttons for Custom Prompt Output -->
+    <button id="saveAsPDFButton" onclick="saveAsPDF()">Save as PDF</button>
+    <button id="previewPDFButton" onclick="previewPDF()">Preview as PDF</button>
+    <button id="cancelOutputButton" onclick="cancelOutput()">Cancel</button>
+
+    <!-- PDF Previews -->
     <iframe id="pdfPreview" src="" frameborder="0"></iframe>
+    <iframe id="customPromptPDFPreview" src="" frameborder="0"></iframe>
 
     <!-- Download Button -->
     <button id="downloadButton" onclick="downloadPDF()">Download Summary</button>
 
     <script>
         let pdfUrl = null;
+        let customPromptResponse = null;
 
         async function uploadFile(promptKey) {
             const fileInput = document.getElementById('fileInput');
@@ -76,6 +123,27 @@
                 alert("Please select a PDF file.");
                 return;
             }
+
+            // Disable buttons to prevent multiple requests
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => button.disabled = true);
+
+            // Show loading message and progress bar
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            progressBarContainer.style.display = 'block';
+
+            // Simulate progress bar
+            const progressBar = document.getElementById('progressBar');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 500);
 
             const formData = new FormData();
             formData.append("file", file);
@@ -94,16 +162,27 @@
                     // Display the PDF in the iframe
                     const pdfPreview = document.getElementById('pdfPreview');
                     pdfPreview.src = pdfUrl;
+                    pdfPreview.style.display = 'block';  // Show the preview box
 
                     // Show the download button
                     const downloadButton = document.getElementById('downloadButton');
                     downloadButton.style.display = 'block';
                 } else {
-                    alert("Error uploading file. Please try again.");
+                    const error = await response.json();
+                    alert(error.error || "Error uploading file. Please try again.");
                 }
             } catch (error) {
                 console.error("Error:", error);
                 alert("An error occurred. Please try again.");
+            } finally {
+                // Re-enable buttons
+                buttons.forEach(button => button.disabled = false);
+
+                // Hide loading message and progress bar
+                loadingDiv.style.display = 'none';
+                progressBarContainer.style.display = 'none';
+                progressBar.style.width = '0%';  // Reset progress bar
+                clearInterval(interval);  // Stop the progress bar
             }
         }
 
@@ -121,6 +200,39 @@
                 return;
             }
 
+            // Disable buttons to prevent multiple requests
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => button.disabled = true);
+
+            // Show loading message and progress bar
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+            const progressBarContainer = document.getElementById('progressBarContainer');
+            progressBarContainer.style.display = 'block';
+
+            // Simulate progress bar
+            const progressBar = document.getElementById('progressBar');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 500);
+
+            // Hide the output and buttons (if they were previously shown)
+            const outputDiv = document.getElementById('output');
+            outputDiv.style.display = 'none';
+            const saveAsPDFButton = document.getElementById('saveAsPDFButton');
+            saveAsPDFButton.style.display = 'none';
+            const previewPDFButton = document.getElementById('previewPDFButton');
+            previewPDFButton.style.display = 'none';
+            const cancelOutputButton = document.getElementById('cancelOutputButton');
+            cancelOutputButton.style.display = 'none';
+            const customPromptPDFPreview = document.getElementById('customPromptPDFPreview');
+            customPromptPDFPreview.style.display = 'none';
+
             const formData = new FormData();
             formData.append("file", file);
             formData.append("custom_prompt", customPrompt);
@@ -133,14 +245,74 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    alert(`Answer: ${result.answer}`);
+                    customPromptResponse = result.answer;  // Save the response
+                    outputDiv.textContent = `Answer: ${result.answer}`;
+                    outputDiv.style.display = 'block';  // Show the output
+                    saveAsPDFButton.style.display = 'block';  // Show the Save as PDF button
+                    previewPDFButton.style.display = 'block';  // Show the Preview as PDF button
+                    cancelOutputButton.style.display = 'block';  // Show the Cancel button
                 } else {
-                    alert("Error processing your question. Please try again.");
+                    const error = await response.json();
+                    alert(error.error || "Error processing your question. Please try again.");
                 }
             } catch (error) {
                 console.error("Error:", error);
                 alert("An error occurred. Please try again.");
+            } finally {
+                // Re-enable buttons
+                buttons.forEach(button => button.disabled = false);
+
+                // Hide loading message and progress bar
+                loadingDiv.style.display = 'none';
+                progressBarContainer.style.display = 'none';
+                progressBar.style.width = '0%';  // Reset progress bar
+                clearInterval(interval);  // Stop the progress bar
             }
+        }
+
+        function saveAsPDF() {
+            if (customPromptResponse) {
+                const blob = new Blob([customPromptResponse], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "response.pdf";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert("No response available to save as PDF.");
+            }
+        }
+
+        function previewPDF() {
+            if (customPromptResponse) {
+                const blob = new Blob([customPromptResponse], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const customPromptPDFPreview = document.getElementById('customPromptPDFPreview');
+                customPromptPDFPreview.src = url;
+                customPromptPDFPreview.style.display = 'block';  // Show the PDF preview
+            } else {
+                alert("No response available to preview as PDF.");
+            }
+        }
+
+        function cancelOutput() {
+            // Hide the output, buttons, and PDF preview
+            const outputDiv = document.getElementById('output');
+            outputDiv.style.display = 'none';
+            const saveAsPDFButton = document.getElementById('saveAsPDFButton');
+            saveAsPDFButton.style.display = 'none';
+            const previewPDFButton = document.getElementById('previewPDFButton');
+            previewPDFButton.style.display = 'none';
+            const cancelOutputButton = document.getElementById('cancelOutputButton');
+            cancelOutputButton.style.display = 'none';
+            const customPromptPDFPreview = document.getElementById('customPromptPDFPreview');
+            customPromptPDFPreview.style.display = 'none';
+
+            // Clear the custom prompt response
+            customPromptResponse = null;
         }
 
         function downloadPDF() {
