@@ -73,6 +73,11 @@
             border-radius: 5px;
             transition: width 0.5s ease-in-out;
         }
+        #loadingContent {
+            margin-top: 10px;
+            color: #007BFF;
+            display: none;  /* Hide the "Loading content" message initially */
+        }
     </style>
 </head>
 <body>
@@ -96,6 +101,7 @@
     <div id="progressBarContainer">
         <div id="progressBar"></div>
     </div>
+    <div id="loadingContent">Loading content...</div>
 
     <!-- Output Display -->
     <div id="output"></div>
@@ -142,6 +148,9 @@
                 progressBar.style.width = `${progress}%`;
                 if (progress >= 100) {
                     clearInterval(interval);
+                    // Show "Loading content" message
+                    const loadingContent = document.getElementById('loadingContent');
+                    loadingContent.style.display = 'block';
                 }
             }, 500);
 
@@ -178,10 +187,12 @@
                 // Re-enable buttons
                 buttons.forEach(button => button.disabled = false);
 
-                // Hide loading message and progress bar
+                // Hide loading message, progress bar, and "Loading content" message
                 loadingDiv.style.display = 'none';
                 progressBarContainer.style.display = 'none';
                 progressBar.style.width = '0%';  // Reset progress bar
+                const loadingContent = document.getElementById('loadingContent');
+                loadingContent.style.display = 'none';
                 clearInterval(interval);  // Stop the progress bar
             }
         }
@@ -218,6 +229,9 @@
                 progressBar.style.width = `${progress}%`;
                 if (progress >= 100) {
                     clearInterval(interval);
+                    // Show "Loading content" message
+                    const loadingContent = document.getElementById('loadingContent');
+                    loadingContent.style.display = 'block';
                 }
             }, 500);
 
@@ -262,10 +276,12 @@
                 // Re-enable buttons
                 buttons.forEach(button => button.disabled = false);
 
-                // Hide loading message and progress bar
+                // Hide loading message, progress bar, and "Loading content" message
                 loadingDiv.style.display = 'none';
                 progressBarContainer.style.display = 'none';
                 progressBar.style.width = '0%';  // Reset progress bar
+                const loadingContent = document.getElementById('loadingContent');
+                loadingContent.style.display = 'none';
                 clearInterval(interval);  // Stop the progress bar
             }
         }
