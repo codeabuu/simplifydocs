@@ -5,6 +5,8 @@ from gtts import gTTS
 import os
 from django.conf import settings
 from decouple import config
+from docx import Document
+
 
 SUMMARIZATION_PROMPTS = {
     "professional_audience": "Condense this text into a summary suitable for a professional audience, retaining technical details.",
@@ -32,6 +34,45 @@ def extract_text_from_pdf(file_path: str) -> str:
     except Exception as e:
         raise ValueError(f"Failed to extract text from PDF: {e}")
     
+def extract_text_from_docx(file_path: str) -> str:
+    """
+        Extracts text from a given DOCX file.
+
+        Args:
+            file_path (str): The path to the DOCX file.
+
+        Returns:
+            str: The extracted text from the DOCX.
+    """
+    try:
+        doc = Document(file_path)
+        text = ""
+        for para in doc.paragraphs:
+            text += para.text
+        return text
+    except Exception as e:
+        raise ValueError(f"Failed to extract text from DOCX: {e}")
+
+def extract_text(file_path: str) -> str:
+    """
+        Extracts text from a given file.
+
+        Args:
+            file_path (str): The path to the file.
+
+        Returns:
+            str: The extracted text from the file.
+    """
+    try:
+        if file_path.endswith(".pdf"):
+            return extract_text_from_pdf(file_path)
+        elif file_path.endswith(".docx"):
+            return extract_text_from_docx(file_path)
+        else:
+            raise ValueError("Unsupported file format. Only PDF and DOCX files are supported at the moment.")
+    except Exception as e:
+        raise ValueError(f"Failed to extract text from file: {e}")
+
 def summarize_text(text, prompt_key="simple_summary") -> str:
     """
         Summarizes the given text using the DeepSeek API.

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import UploadedFile
 from .serializers import UploadedFileSerializer
 from .utils import (
-    extract_text_from_pdf,
+    extract_text,
     summarize_text,
     ask_question,
     text_to_speech
@@ -38,7 +38,7 @@ class FileUploadView(APIView):
                 file_path = uploaded_file.file.path
 
                 # Extract text
-                text = extract_text_from_pdf(file_path)
+                text = extract_text(file_path)
                 prompt_key = request.data.get('prompt_key', 'simple_summary')
                 summary = summarize_text(text, prompt_key)  # Summarize text
 
@@ -80,7 +80,7 @@ class AskQuestionView(APIView):
                 file_path = uploaded_file.file.path
 
                 # Extract text
-                text = extract_text_from_pdf(file_path)
+                text = extract_text(file_path)
 
                 # Ask the question
                 custom_prompt = request.data.get("custom_prompt")
@@ -111,7 +111,7 @@ class GenerateOriginalAudioView(APIView):
                 file_path = uploaded_file.file.path
 
                 # Extract text from the original PDF
-                text = extract_text_from_pdf(file_path)
+                text = extract_text(file_path)
 
                 # Convert text to audio
                 audio_path = text_to_speech(text, "original_audio")
@@ -136,7 +136,7 @@ class GenerateSummaryAudioView(APIView):
                 file_path = uploaded_file.file.path
 
                 # Extract text from the original PDF
-                text = extract_text_from_pdf(file_path)
+                text = extract_text(file_path)
 
                 # Summarize the text
                 prompt_key = request.data.get('prompt_key', 'simple_summary')

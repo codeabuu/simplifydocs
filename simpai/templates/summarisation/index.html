@@ -171,7 +171,7 @@
             document.getElementById('customPromptSection').style.display = 'block';
 
             // Check if the file is a PDF
-            if (file.type === "application/pdf") {
+            if (file.type === "application/pdf" || file.name.endsWith(".docx")) {
                 // Show summarization options for PDF files
                 document.getElementById('summarizationOptions').style.display = 'block';
             } else {
