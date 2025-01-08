@@ -1,6 +1,8 @@
 # utils.py
 import pandas as pd
 from openai import OpenAI
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -8,6 +10,8 @@ from decouple import config
 import plotly.express as px
 import os
 from django.conf import settings
+import seaborn as sns
+from concurrent.futures import ThreadPoolExecutor
 from openpyxl import load_workbook
 
 # Initialize DeepSeek client
@@ -55,35 +59,31 @@ def analyze_data(data):
     )
     return response.choices[0].message.content
 
-def generate_chart(data, chart_type):
+def ask_question(data_summary, question):
     """
-    Generate a chart based on the dataset and chart type.
+    Answer a user's question about the dataset using DeepSeek's API.
     """
-    #plt.figure()
-    if chart_type == 'bar':
-        #data.plot(kind='bar')
-         fig = px.bar(data, x=data.columns[0], y=data.columns[1])
-    elif chart_type == 'line':
-        #data.plot(kind='line')
-        fig = px.line(data, x=data.columns[0], y=data.columns[1])
-    elif chart_type == 'pie':
-        #data.plot(kind='pie', y=data.columns[1])  # Assuming the second column is the value
-        fig = px.pie(data, names=data.columns[0], values=data.columns[1])
-    elif chart_type == 'scatter':
-        #data.plot(kind='scatter', x=data.columns[0], y=data.columns[1])
-        fig = px.scatter(data, x=data.columns[0], y=data.columns[1])
-    else:
-        raise ValueError("Unsupported chart type.")
+    summary_str = (
+        f"Columns: {data_summary['columns']}\n"
+        f"Data Types: {data_summary['data_types']}\n"
+        f"Sample Data: {data_summary['sample_data']}\n"
+        f"Numeric Summary: {data_summary['numeric_summary']}"
+    )
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
+            {"role": "system", "content": (
+                "You are a data analysis assistant."
+                "Answer the user's question strictly based on the provided dataset summary."
+                "If the question is unrelated to the dataset, respond with 'I'm sorry, I can only answer questions related to the dataset.'"
+                )},
+            {"role": "user", "content": f"Dataset Summary:\n{summary_str}\n\nQuestion: {question}"},
+        ],
+        stream=False
+    )
+    return response.choices[0].message.content
 
-    # Save the chart to a buffer
-    buf = io.BytesIO()
-    #plt.savefig(buf, format='png')
-    #plt.close()
-    fig.write_image(buf, format='png', engine='kaleido')
-    buf.seek(0)
-    return base64.b64encode(buf.read()).decode('utf-8')
-
-def preprocess_file(file_path):
+def preprocess_file_ask(file_path):
     """
     Detect the file type (CSV or Excel) and preprocess it accordingly.
     """
@@ -106,26 +106,121 @@ def preprocess_file(file_path):
             "numeric_summary": data.describe().to_dict()
         }
         return summary
-
+    except Exception as e:
+        raise ValueError(f"Error processing file: {str(e)}")
+    
+def preprocess_file(file_path):
+    """
+    Detect the file type (CSV or Excel) and preprocess it accordingly.
+    """
+    try:
+        # Determine file type based on extension
+        if file_path.endswith('.csv'):
+            data = pd.read_csv(file_path)
+        elif file_path.endswith('.xlsx'):
+            data = pd.read_excel(file_path, engine='openpyxl')
+        elif file_path.endswith('.xls'):
+            data = pd.read_excel(file_path, engine='xlrd')
+        else:
+            raise ValueError("Unsupported file format. Please upload .csv, .xlsx, or .xls files.")
+        return data
     except Exception as e:
         raise ValueError(f"Error processing file: {str(e)}")
 
-def ask_question(data_summary, question):
+def generate_dynamic_charts(data, sample_size=1000):
     """
-    Answer a user's question about the dataset using DeepSeek's API.
+    Automatically generate charts based on the data structure.
+    
+    Args:
+        data (DataFrame): The dataset.
+        sample_size (int): Number of rows to sample for chart generation.
+    
+    Returns:
+        dict: A dictionary of chart names and base64-encoded images.
     """
-    summary_str = (
-        f"Columns: {data_summary['columns']}\n"
-        f"Data Types: {data_summary['data_types']}\n"
-        f"Sample Data: {data_summary['sample_data']}\n"
-        f"Numeric Summary: {data_summary['numeric_summary']}"
-    )
-    response = client.chat.completions.create(
-        model="deepseek-chat",
-        messages=[
-            {"role": "system", "content": "You are a data analysis assistant. Answer the user's question based on the following dataset summary."},
-            {"role": "user", "content": f"Dataset Summary:\n{summary_str}\n\nQuestion: {question}"},
-        ],
-        stream=False
-    )
-    return response.choices[0].message.content
+    charts = {}
+    try:
+        # Sample the data if it's too large
+        if len(data) > sample_size:
+            data = data.sample(sample_size)
+
+        # Analyze column types
+        numeric_columns = data.select_dtypes(include=["number"]).columns.tolist()
+        categorical_columns = data.select_dtypes(include=["object", "category"]).columns.tolist()
+        date_like_columns = [col for col in data.columns if pd.api.types.is_datetime64_any_dtype(data[col]) or "date" in col.lower() or "year" in col.lower()]
+
+        # Generate charts concurrently
+        with ThreadPoolExecutor() as executor:
+            # Line Charts
+            if date_like_columns and numeric_columns:
+                for date_col in date_like_columns:
+                    for num_col in numeric_columns:
+                        future = executor.submit(generate_line_chart, data, date_col, num_col)
+                        charts[f"Line Chart ({date_col} vs {num_col})"] = future.result()
+
+            # Bar Charts
+            if categorical_columns and numeric_columns:
+                for cat_col in categorical_columns:
+                    for num_col in numeric_columns:
+                        future = executor.submit(generate_bar_chart, data, cat_col, num_col)
+                        charts[f"Bar Chart ({cat_col} vs {num_col})"] = future.result()
+
+            # Pie Charts
+            if categorical_columns:
+                for cat_col in categorical_columns:
+                    future = executor.submit(generate_pie_chart, data, cat_col)
+                    charts[f"Pie Chart ({cat_col})"] = future.result()
+
+            # Scatter Plots
+            if len(numeric_columns) > 1:
+                for i in range(len(numeric_columns)):
+                    for j in range(i + 1, len(numeric_columns)):
+                        future = executor.submit(generate_scatter_plot, data, numeric_columns[i], numeric_columns[j])
+                        charts[f"Scatter Plot ({numeric_columns[i]} vs {numeric_columns[j]})"] = future.result()
+
+    except Exception as e:
+        raise ValueError(f"Error generating charts: {str(e)}")
+
+    return charts
+
+def save_chart_to_base64():
+    """
+    Save the current matplotlib figure to a Base64 string.
+    """
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    buf.seek(0)
+    base64_image = base64.b64encode(buf.read()).decode('utf-8')
+    buf.close()
+    plt.close()
+    return base64_image
+
+def generate_line_chart(data, x_col, y_col):
+    """Generate a line chart."""
+    plt.figure(figsize=(10, 6))
+    sns.lineplot(data=data, x=x_col, y=y_col, marker="o")
+    plt.title(f"Trend Over Time ({x_col} vs {y_col})")
+    return save_chart_to_base64()
+
+def generate_bar_chart(data, x_col, y_col):
+    """Generate a bar chart."""
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=data, x=x_col, y=y_col, ci=None)
+    plt.title(f"Bar Chart ({x_col} vs {y_col})")
+    plt.xticks(rotation=45)
+    return save_chart_to_base64()
+
+def generate_pie_chart(data, col):
+    """Generate a pie chart."""
+    plt.figure(figsize=(8, 8))
+    data[col].value_counts().plot.pie(autopct='%1.1f%%', startangle=90)
+    plt.title(f"Pie Chart ({col}) Proportions")
+    plt.ylabel("")
+    return save_chart_to_base64()
+
+def generate_scatter_plot(data, x_col, y_col):
+    """Generate a scatter plot."""
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=data, x=x_col, y=y_col)
+    plt.title(f"Scatter Plot ({x_col} vs {y_col})")
+    return save_chart_to_base64()

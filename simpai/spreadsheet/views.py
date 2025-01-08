@@ -3,17 +3,9 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from .models import UploadedSpreadsheet
 from .serializers import UploadedSpreadsheetSerializer
-from .utils import parse_spreadsheet, analyze_data, generate_chart, ask_question
+from .utils import parse_spreadsheet, analyze_data, generate_dynamic_charts, ask_question, preprocess_file, preprocess_file_ask
 import os
-
-# views.py
-from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser
-from rest_framework.response import Response
-from .models import UploadedSpreadsheet
-from .serializers import UploadedSpreadsheetSerializer
-from .utils import parse_spreadsheet, analyze_data, generate_chart, ask_question, preprocess_file
-import os
+import pandas as pd
 
 class SpreadsheetUploadView(APIView):
     parser_classes = [MultiPartParser]
@@ -57,20 +49,34 @@ class AnalyzeDataView(APIView):
 class GenerateChartView(APIView):
     def post(self, request, *args, **kwargs):
         file_id = request.data.get('file_id')
-        chart_type = request.data.get('chart_type')  # e.g., 'bar', 'line', 'pie', 'scatter'
+        sample_size = request.data.get('sample_size', 1000)
+        
         try:
             spreadsheet = UploadedSpreadsheet.objects.get(id=file_id)
             file_path = spreadsheet.file.path
 
             # Parse the file
-            data = parse_spreadsheet(file_path)
+            data = preprocess_file(file_path)
 
-            # Generate the chart
-            chart_base64 = generate_chart(data, chart_type)
-            return Response({"chart": chart_base64})
+            # Ensure data is a DataFrame
+            if isinstance(data, dict):
+                data = pd.DataFrame(data)
+            
+            if sample_size is not None:
+                charts = generate_dynamic_charts(data, sample_size=int(sample_size))
+            # Generate dynamic charts
+            else:
+                charts = generate_dynamic_charts(data)
+            if not charts:
+                return Response({"error": "No suitable chart found for the dataset."}, status=400)
+            
+            return Response({"charts": charts})
+
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)
 
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
 class AskQuestionView(APIView):
     def post(self, request, *args, **kwargs):
@@ -82,7 +88,7 @@ class AskQuestionView(APIView):
             print(f"File path: {file_path}")
 
             # Preprocess the file to generate a summary
-            data_summary = preprocess_file(file_path)
+            data_summary = preprocess_file_ask(file_path)
 
             # Ask the question using the data summary
             answer = ask_question(data_summary, question)
