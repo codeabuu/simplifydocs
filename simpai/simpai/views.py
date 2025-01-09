@@ -5,3 +5,6 @@ def index(request):
 
 def pdf_features(request):
     return render(request, 'summarisation/pdf_features.html')
+
+def spreadsheet_view(request):
+    return render(request, 'spreadsheet/index.html')
