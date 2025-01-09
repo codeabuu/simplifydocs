@@ -63,6 +63,16 @@ def ask_question(data_summary, question):
     """
     Answer a user's question about the dataset using DeepSeek's API.
     """
+    chart_keywords = ["generate chart", "generate a bar chart","create chart", "make chart", "plot chart",
+        "generate graph", "create graph", "make graph", "plot graph",
+        "visualize data", "show chart", "show graph", "draw chart", "draw graph"]
+
+    if any(keyword in question.lower() for keyword in chart_keywords):
+        return (
+            "It looks like you're asking about chart generation. "
+            "Please use the 'Generate Chart' feature on the platform to create visualizations for your dataset. "
+            "If you have other questions, let me know!"
+        )
     summary_str = (
         f"Columns: {data_summary['columns']}\n"
         f"Data Types: {data_summary['data_types']}\n"
