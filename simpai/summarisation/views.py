@@ -74,7 +74,7 @@ class AskQuestionView(APIView):
             is_processing = True  # Set the flag to indicate a process is ongoing
 
         try:
-            file_serializer = UploadedFileSerializer(data=request.data)
+            file_serializer = UploadedFileSerializer.objects.get(data=request.data)
             if file_serializer.is_valid():
                 uploaded_file = file_serializer.save()
                 file_path = uploaded_file.file.path
