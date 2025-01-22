@@ -3,6 +3,7 @@ import { Send } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { askQuestion } from '@/lib/api'; // Import the askQuestion API
 
 interface Message {
   id: number;
@@ -11,21 +12,31 @@ interface Message {
 }
 
 interface ChatInterfaceProps {
+  fileId: string | null; // Add fileId prop
   onSendMessage: (message: string) => void;
 }
 
-export const ChatInterface = ({ onSendMessage }: ChatInterfaceProps) => {
+export const ChatInterface = ({ fileId, onSendMessage }: ChatInterfaceProps) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Hello! Ask me anything about your spreadsheet.", sender: 'ai' }
   ]);
 
-  const handleSend = () => {
-    if (message.trim()) {
+  const handleSend = async () => {
+    if (message.trim() && fileId) {
       const newMessage = { id: messages.length + 1, text: message, sender: 'user' as const };
       setMessages([...messages, newMessage]);
-      onSendMessage(message);
       setMessage('');
+
+      try {
+        // Call the backend API to ask a question
+        const response = await askQuestion(fileId, message);
+        const aiMessage = { id: messages.length + 2, text: response.answer, sender: 'ai' as const };
+        setMessages((prev) => [...prev, aiMessage]);
+      } catch (error) {
+        const errorMessage = { id: messages.length + 2, text: "Failed to get a response. Please try again.", sender: 'ai' as const };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
     }
   };
 

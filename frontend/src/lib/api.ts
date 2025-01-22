@@ -14,10 +14,9 @@ export const uploadSpreadsheet = async (file: File) => {
     return response.data;
 };
 
-export const analyzeData = async (fileId: string, sampleSize: number) => {
+export const analyzeData = async (fileId: string,) => {
     const response = await axios.post(`${API_BASE_URL}/csv/analyze/`, {
         file_id: fileId,
-        sampleSize: sampleSize,
     });
     return response.data;
 };
@@ -27,7 +26,7 @@ export const generateCharts = async (fileId: string, sampleSize: number) => {
       file_id: fileId,
       sample_size: sampleSize,
     });
-    return response.data;
+    return response.data.charts;
   };
   
   export const askQuestion = async (fileId: string, question: string) => {
@@ -36,4 +35,17 @@ export const generateCharts = async (fileId: string, sampleSize: number) => {
       question,
     });
     return response.data;
+  };
+
+  //pdf apis
+  export const uploadPdf = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+  
+    const response = await axios.post(`${API_BASE_URL}summarisation/upload/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data; // Ensure the backend returns { file_id: string }
   };

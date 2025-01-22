@@ -5,18 +5,21 @@ import { AnalysisConfig } from '@/components/AnalysisConfig';
 import { PdfControls } from '@/components/PdfControls';
 import { ChatInterface } from '@/components/ChatInterface';
 import { PdfPreview } from '@/components/PdfPreview';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Card } from "@/components/ui/card";
+import { Card } from '@/components/ui/card';
 import { Brain } from 'lucide-react';
+import { analyzeData, generateCharts } from '@/lib/api';
 
 const Index = () => {
   // Spreadsheet states
   const [spreadsheetFile, setSpreadsheetFile] = useState<File | null>(null);
-  const [fileId, setFileId] = useState<string | null>(null); // Store fileId separately
+  const [fileId, setFileId] = useState<string | null>(null);
   const [sampleSize, setSampleSize] = useState(100);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string | null>(null);
+  const [generatedCharts, setGeneratedCharts] = useState<{ [key: string]: string }>({});
 
   // PDF states
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -24,13 +27,15 @@ const Index = () => {
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
 
   const handleSpreadsheetUpload = (file: File, uploadedFileId: string) => {
-    setSpreadsheetFile(file);  // Store the entire file object
-    setFileId(uploadedFileId);  // Store the fileId received from the backend
+    setSpreadsheetFile(file);
+    setFileId(uploadedFileId);
   };
 
   const handleReplaceSpreadsheet = () => {
-    setSpreadsheetFile(null);  // Clear the current file
-    setFileId(null);  // Clear the fileId
+    setSpreadsheetFile(null);
+    setFileId(null);
+    setAnalysisResult(null);
+    setGeneratedCharts({});
   };
 
   const handlePdfUpload = (file: File) => {
@@ -44,10 +49,16 @@ const Index = () => {
       return;
     }
     setIsAnalyzing(true);
-    // TODO: Implement your analysis logic here
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsAnalyzing(false);
-    toast.success('Analysis complete!');
+    try {
+      const result = await analyzeData(fileId);
+      setAnalysisResult(result.chart_suggestion);
+      toast.success('Analysis complete!');
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast.error('Failed to analyze data');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -56,10 +67,36 @@ const Index = () => {
       return;
     }
     setIsGenerating(true);
-    // TODO: Implement your chart generation logic here
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsGenerating(false);
-    toast.success('Charts generated successfully!');
+    try {
+      const chartsData = await generateCharts(fileId, sampleSize);
+      console.log('Charts data received:', chartsData);
+
+      if (!chartsData) {
+        throw new Error('No charts data received');
+      }
+
+      // Process the charts
+      const processedCharts: { [key: string]: string } = {};
+
+      Object.entries(chartsData).forEach(([chartName, chartData]) => {
+        if (typeof chartData === 'string') {
+          const base64Prefix = 'data:image/png;base64,';
+          processedCharts[chartName] = chartData.startsWith(base64Prefix)
+            ? chartData
+            : `${base64Prefix}${chartData}`;
+          console.log(`Processed chart ${chartName}`); // Debug log
+        }
+      });
+
+      console.log('Processed charts:', processedCharts); // Debug log
+      setGeneratedCharts(processedCharts);
+      toast.success('Charts generated successfully!');
+    } catch (error) {
+      console.error('Chart generation error:', error);
+      toast.error('Failed to generate charts');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSummaryType = async (type: string) => {
@@ -68,8 +105,7 @@ const Index = () => {
       return;
     }
     setIsProcessingPdf(true);
-    // TODO: Implement your PDF summary logic here
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsProcessingPdf(false);
     toast.success(`${type} summary generated!`);
   };
@@ -80,8 +116,7 @@ const Index = () => {
       return;
     }
     setIsProcessingPdf(true);
-    // TODO: Implement your custom prompt logic here
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsProcessingPdf(false);
     toast.success('Custom processing complete!');
   };
@@ -92,17 +127,6 @@ const Index = () => {
       link.href = pdfPreviewUrl;
       link.download = 'processed.pdf';
       link.click();
-    }
-  };
-
-  const handleGeneralQuestion = async (message: string) => {
-    try {
-      // TODO: Implement your AI chat logic here
-      console.log('Processing general question:', message);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Response received!');
-    } catch (error) {
-      toast.error('Failed to process your question');
     }
   };
 
@@ -118,16 +142,17 @@ const Index = () => {
             <h2 className="text-xl font-semibold">Ask Me Anything</h2>
           </div>
           <div className="p-4">
-            <ChatInterface onSendMessage={handleGeneralQuestion} />
+            <ChatInterface fileId={fileId} onSendMessage={handleCustomPrompt} />
           </div>
         </Card>
-        
+
         <Tabs defaultValue="spreadsheet" className="space-y-8">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="spreadsheet">Spreadsheet Analysis</TabsTrigger>
             <TabsTrigger value="pdf">PDF Processing</TabsTrigger>
           </TabsList>
 
+          {/* Spreadsheet Tab */}
           <TabsContent value="spreadsheet" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-8">
@@ -145,9 +170,57 @@ const Index = () => {
                         Replace File
                       </button>
                     </div>
-                    
-                    <div className="bg-white p-8 rounded-lg shadow-sm h-[400px] flex items-center justify-center">
-                      <p className="text-gray-500">Charts will appear here</p>
+
+                    {/* Analysis Output Section */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+                      <p className="font-medium">Analysis Results:</p>
+                      {isAnalyzing ? (
+                        <p className="text-sm text-gray-500">Analyzing...</p>
+                      ) : analysisResult ? (
+                        <p className="text-sm text-gray-500">{analysisResult}</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Your analysis output will appear here.</p>
+                      )}
+                    </div>
+
+                    {/* Chart Display Section */}
+                    <div className="bg-white p-8 rounded-lg shadow-sm min-h-[400px] overflow-auto">
+                      {Object.keys(generatedCharts).length > 0 ? (
+                        <div className="space-y-8">
+                          {Object.entries(generatedCharts).map(([chartName, chartData]) => (
+                            <div key={chartName} className="chart-container">
+                              <h3 className="text-center font-medium text-lg mb-4">
+                                {chartName.replace(/_/g, ' ').toUpperCase()}
+                              </h3>
+                              <div className="flex justify-center">
+                                <img
+                                  src={chartData}
+                                  alt={`${chartName} chart`}
+                                  className="max-w-full h-auto object-contain"
+                                  onError={(e) => {
+                                    console.error(`Error loading chart: ${chartName}`);
+                                    toast.error(`Failed to load ${chartName} chart`);
+                                  }}
+                                  onLoad={() => console.log(`Chart loaded successfully: ${chartName}`)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="h-full flex items-center justify-center">
+                          <p className="text-gray-500">
+                            {isGenerating ? (
+                              <span className="flex items-center gap-2">
+                                Generating charts... 
+                                <span className="animate-spin">⏳</span>
+                              </span>
+                            ) : (
+                              'Charts will appear here'
+                            )}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -155,6 +228,7 @@ const Index = () => {
 
               <div className="space-y-8">
                 <AnalysisConfig
+                  fileId={fileId || ''}
                   sampleSize={sampleSize}
                   onSampleSizeChange={setSampleSize}
                   onAnalyze={handleAnalyze}
@@ -162,12 +236,13 @@ const Index = () => {
                   isAnalyzing={isAnalyzing}
                   isGenerating={isGenerating}
                 />
-                
-                <ChatInterface onSendMessage={handleCustomPrompt} />
+
+                <ChatInterface fileId={fileId} onSendMessage={handleCustomPrompt} />
               </div>
             </div>
           </TabsContent>
 
+          {/* PDF Tab */}
           <TabsContent value="pdf" className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2 space-y-8">

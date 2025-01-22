@@ -1,18 +1,20 @@
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { analyzeData, generateCharts } from '@/lib/api'; // Adjust the import path as needed
 
 interface AnalysisConfigProps {
+  fileId: string; // Add fileId prop
   sampleSize: number;
   onSampleSizeChange: (size: number) => void;
-  onAnalyze: () => void;
-  onGenerate: () => void;
+  onAnalyze: (result: any) => void; // Update to pass analysis result
+  onGenerate: (charts: any) => void; // Update to pass generated charts
   isAnalyzing: boolean;
   isGenerating: boolean;
 }
 
 export const AnalysisConfig = ({
+  fileId,
   sampleSize,
   onSampleSizeChange,
   onAnalyze,
@@ -20,6 +22,27 @@ export const AnalysisConfig = ({
   isAnalyzing,
   isGenerating
 }: AnalysisConfigProps) => {
+  
+  const handleAnalyze = async () => {
+    try {
+      // Analysis doesn't use sampleSize
+      const result = await analyzeData(fileId);
+      onAnalyze(result);
+    } catch (error) {
+      console.error('Error analyzing data:', error);
+    }
+  };
+
+  const handleGenerate = async () => {
+    try {
+      // Only generate charts using the sampleSize
+      const charts = await generateCharts(fileId, sampleSize);
+      onGenerate(charts);
+    } catch (error) {
+      console.error('Error generating charts:', error);
+    }
+  };
+
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
       <div className="space-y-2">
@@ -50,14 +73,14 @@ export const AnalysisConfig = ({
 
       <div className="flex gap-4">
         <Button 
-          onClick={onAnalyze} 
+          onClick={handleAnalyze} 
           className="flex-1"
           disabled={isAnalyzing}
         >
           {isAnalyzing ? "Analyzing..." : "Analyze"}
         </Button>
         <Button 
-          onClick={onGenerate}
+          onClick={handleGenerate}
           className="flex-1"
           variant="secondary"
           disabled={isGenerating}
