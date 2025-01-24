@@ -1,21 +1,43 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { toast } from 'sonner';
 
 interface PdfControlsProps {
   onSummaryType: (type: string) => void;
-  onCustomPrompt: (prompt: string) => void;
+  onCustomPrompt: (prompt: string) => Promise<void>; // Function to handle custom prompts
   onDownload: () => void;
   isProcessing: boolean;
+  fileId: string | null;
 }
 
 export const PdfControls = ({
   onSummaryType,
   onCustomPrompt,
   onDownload,
-  isProcessing
+  isProcessing,
+  fileId,
 }: PdfControlsProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
+
+  const handleCustomPrompt = async () => {
+    if (!fileId) {
+      toast.error('Please upload a PDF first');
+      return;
+    }
+    if (!customPrompt.trim()) {
+      toast.error('Please enter a custom prompt');
+      return;
+    }
+    try {
+      await onCustomPrompt(customPrompt); // Call the API with the custom prompt
+      setCustomPrompt(""); // Clear the input field
+      toast.success('Custom prompt processed successfully!');
+    } catch (error) {
+      console.error('Error processing custom prompt:', error);
+      toast.error('Failed to process custom prompt');
+    }
+  };
 
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
@@ -61,11 +83,8 @@ export const PdfControls = ({
               disabled={isProcessing}
             />
             <Button 
-              onClick={() => {
-                onCustomPrompt(customPrompt);
-                setCustomPrompt("");
-              }}
-              disabled={isProcessing || !customPrompt}
+              onClick={handleCustomPrompt}
+              disabled={isProcessing || !customPrompt.trim()}
             >
               Process
             </Button>

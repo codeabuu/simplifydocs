@@ -1,25 +1,29 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 interface PdfPreviewProps {
-  pdfUrl: string | null;
+  pdfFile: File | null;
+  onReplaceFile: () => void;
 }
 
-export const PdfPreview = ({ pdfUrl }: PdfPreviewProps) => {
-  if (!pdfUrl) {
+export const PdfPreview = ({ pdfFile, onReplaceFile }: PdfPreviewProps) => {
+  if (!pdfFile) {
     return (
       <div className="h-[600px] bg-white rounded-lg shadow-sm flex items-center justify-center">
-        <p className="text-gray-500">PDF preview will appear here</p>
+        <p className="text-gray-500">No PDF uploaded yet</p>
       </div>
     );
   }
 
   return (
-    <ScrollArea className="h-[600px] bg-white rounded-lg shadow-sm">
-      <iframe
-        src={pdfUrl}
-        className="w-full h-full"
-        title="PDF Preview"
-      />
-    </ScrollArea>
+    <div className="h-[600px] bg-white rounded-lg shadow-sm p-6">
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-lg font-medium">Uploaded File:</p>
+        <button
+          className="text-sm text-blue-600 hover:text-blue-800"
+          onClick={onReplaceFile}
+        >
+          Replace File
+        </button>
+      </div>
+      <p className="text-sm text-gray-500">{pdfFile.name}</p>
+    </div>
   );
 };
