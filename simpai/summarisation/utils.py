@@ -105,14 +105,14 @@ def summarize_text(text, prompt_key="simple_summary") -> str:
     except Exception as e:
         raise ValueError(f"Failed to summarize text: {e}")
     
-def ask_question(text, question):
+def ask_question(text, custom_prompt):
     try:
         client = OpenAI(api_key=config("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided text. If the question is unrelated to the text, respond with: 'This question is unrelated to the document or is not availbale in the document."},
-                {"role": "user", "content": f"Text:\n{text}\n\nQuestion:\n{question}"},
+                {"role": "user", "content": f"Text:\n{text}\n\nQuestion:\n{custom_prompt}"},
             ],
             stream=False
         )
