@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-from summarisation.views import FileUploadView, AskQuestionsView
+from summarisation.views import FileUploadView, AskQuestionsView, SummarizeView
 from spreadsheet.views import SpreadsheetUploadView, AnalyzeDataView, GenerateChartView, AskQuestionView
 from . import views
 
@@ -19,6 +19,7 @@ urlpatterns = [
     #path('summarisation/pdf_features/', TemplateView.as_view(template_name='pdf_features.html'), name='pdf-features'),
     path('summarisation/ask/', AskQuestionsView.as_view(), name='ask-question'),
     path('summarisation/upload/', FileUploadView.as_view(), name='file-upload'),
+    path('summarisation/summarize/', SummarizeView.as_view(), name='summarize'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
