@@ -1,26 +1,33 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { uploadPdf } from '@/lib/api';
 
 interface PdfUploadProps {
-  onFileUpload: (file: File) => void;
+  onFileUpload: (file: File, fileId: string) => void;
 }
 
 export const PdfUpload = ({ onFileUpload }: PdfUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
 
-  const onDrop = (acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       if (file.type === 'application/pdf') {
-        onFileUpload(file);
+        try {
+          const response = await uploadPdf(file);
+          onFileUpload(file, response.file_id);
+          toast.success('PDF uploaded successfully!');
+        } catch (error) {
+          toast.error('Failed to upload PDF. Please try again.');
+        }
         toast.success('PDF uploaded successfully!');
       } else {
         toast.error('Please upload a PDF file');
       }
     }
-  };
+  }, [onFileUpload]);
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
