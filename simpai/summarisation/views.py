@@ -47,7 +47,13 @@ class SummarizeView(APIView):
 
             # Summarize the text
             summary = summarize_text(text, prompt_key)
-            return Response({"summary": summary}, status=200)
+
+            pdf_path = os.path.join(settings.MEDIA_ROOT, f"{uploaded_file.file.name}_summary.pdf")
+            generate_pdf(summary, pdf_path)
+
+            response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}_summary.pdf"'
+            return response
 
         except UploadedFile.DoesNotExist:
             return Response({"error": "Invalid file_id. File not found."}, status=404)
@@ -78,7 +84,14 @@ class AskQuestionsView(APIView):
 
             # Ask the question using the custom prompt
             answer = ask_question(text, custom_prompt)
-            return Response({"answer": answer}, status=200)
+
+            pdf_path = os.path.join(settings.MEDIA_ROOT, f"{uploaded_file.file.name}_answer.pdf")
+            generate_pdf(answer, pdf_path)
+
+            # Serve the PDF for download
+            response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}_answer.pdf"'
+            return response
 
         except UploadedFile.DoesNotExist:
             return Response({"error": "Invalid file_id. File not found."}, status=404)
