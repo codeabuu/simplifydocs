@@ -39,27 +39,32 @@ export const generateCharts = async (fileId: string, sampleSize: number) => {
 
   //pdf apis
   // lib/api.ts
-export const uploadPdf = async (formData: FormData) => {
-  const response = await fetch('/upload/', {
-    method: 'POST',
-    body: formData,
-  });
-  if (!response.ok) {
-    throw new Error('Failed to upload PDF');
+export const uploadPdf = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await axios.post(
+    `${API_BASE_URL}/summarisation/upload/`,
+    formData,{
+    headers: {
+      'Content-Type': 'multipart/form-data'
   }
-  return response.json(); // { file_id: string, summary: string }
+  });
+  return response.data;
 };
 
-export const askCustom = async (fileId: string, prompt: string) => {
-  const response = await fetch('/custom-prompt/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ file_id: fileId, custom_prompt: prompt }),
+export const askCustom = async (fileId: string, question: string) => {
+  const response = await axios.post(`${API_BASE_URL}/summarisation/ask/`, {
+    file_id: fileId,
+    question,
   });
-  if (!response.ok) {
-    throw new Error('Failed to process custom prompt');
-  }
-  return response.json(); // { answer: string }
+  return response.data;
+};
+
+export const summarizePdf = async (fileId: string, promptKey: string = 'simple_summary') => {
+  const response = await axios.post(`${API_BASE_URL}/summarisation/summarize/`, {
+    file_id: fileId,
+    prompt_key: promptKey,
+  });
+  return response.data;
 };

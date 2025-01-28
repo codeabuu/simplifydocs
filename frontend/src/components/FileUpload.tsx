@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { uploadSpreadsheet } from '@/lib/api'; // Adjust the import path as needed
@@ -11,33 +11,47 @@ interface FileUploadProps {
 export const FileUpload = ({ onFileUpload }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+  const onDrop = useCallback(
+    async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
+      if (acceptedFiles.length > 0) {
+        const file = acceptedFiles[0];
+        if (
+          file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
           file.type === 'application/vnd.ms-excel' ||
-          file.type === 'text/csv') {
-        try {
-          const response = await uploadSpreadsheet(file);
-          onFileUpload(file, response.file_id); // Pass the fileId to the parent component
-          toast.success('File uploaded successfully!');
-        } catch (error) {
-          toast.error('Failed to upload file. Please try again.');
+          file.type === 'text/csv'
+        ) {
+          try {
+            const response = await uploadSpreadsheet(file);
+            onFileUpload(file, response.file_id); // Pass the fileId to the parent component
+            toast.success('File uploaded successfully!');
+          } catch (error) {
+            toast.error('Failed to upload file. Please try again.');
+          }
+        } else {
+          toast.error('Please upload a valid spreadsheet file');
         }
-      } else {
-        toast.error('Please upload a valid spreadsheet file');
       }
-    }
-  }, [onFileUpload]);
+
+      // Handle file rejection (if any)
+      if (fileRejections.length > 0) {
+        toast.error('Invalid file type. Please upload a valid spreadsheet file.');
+      }
+    },
+    [onFileUpload]
+  );
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls'],
-      'text/csv': ['.csv']
+      'text/csv': ['.csv'],
     },
-    multiple: false
+    multiple: false,
+    onDragEnter: () => setIsDragging(true),  // Set dragging state when entering
+    onDragLeave: () => setIsDragging(false),  // Reset dragging state when leaving
+    onDropAccepted: () => setIsDragging(false),  // Reset dragging state after drop
+    onDropRejected: () => setIsDragging(false),  // Reset dragging state if drop is rejected
   });
 
   return (
@@ -46,9 +60,6 @@ export const FileUpload = ({ onFileUpload }: FileUploadProps) => {
       className={`p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors
         ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary'}
       `}
-      onDragEnter={() => setIsDragging(true)}
-      onDragLeave={() => setIsDragging(false)}
-      onDrop={() => setIsDragging(false)}
     >
       <input {...getInputProps()} />
       <div className="flex flex-col items-center gap-4">

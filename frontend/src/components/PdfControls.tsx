@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from 'sonner';
+import { summarizePdf } from '@/lib/api'; // Import the summarizePdf function
 
 interface PdfControlsProps {
   onSummaryType: (type: string) => void;
-  onCustomPrompt: (prompt: string) => Promise<void>; // Function to handle custom prompts
+  onCustomPrompt: (prompt: string) => Promise<void>;
   onDownload: () => void;
-  isProcessing: boolean;
   fileId: string | null;
 }
 
@@ -15,10 +15,29 @@ export const PdfControls = ({
   onSummaryType,
   onCustomPrompt,
   onDownload,
-  isProcessing,
   fileId,
 }: PdfControlsProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSummaryType = async (type: string) => {
+    if (!fileId) {
+      toast.error('Please upload a PDF first');
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      const response = await summarizePdf(fileId, type); // Call the summarizePdf API
+      onSummaryType(response); // Pass the response to the parent component
+      toast.success('Summary generated successfully!');
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      toast.error('Failed to generate summary');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleCustomPrompt = async () => {
     if (!fileId) {
@@ -30,12 +49,15 @@ export const PdfControls = ({
       return;
     }
     try {
-      await onCustomPrompt(customPrompt); // Call the API with the custom prompt
+      setIsProcessing(true);
+      await onCustomPrompt(customPrompt); // Call the parent component's custom prompt handler
       setCustomPrompt(""); // Clear the input field
       toast.success('Custom prompt processed successfully!');
     } catch (error) {
       console.error('Error processing custom prompt:', error);
       toast.error('Failed to process custom prompt');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -44,21 +66,21 @@ export const PdfControls = ({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-2">
           <Button 
-            onClick={() => onSummaryType("summary")}
+            onClick={() => handleSummaryType("simple_summary")} // General Summary
             disabled={isProcessing}
             variant="secondary"
           >
             General Summary
           </Button>
           <Button 
-            onClick={() => onSummaryType("beginners")}
+            onClick={() => handleSummaryType("beginners")} // Beginner Summary
             disabled={isProcessing}
             variant="secondary"
           >
             Beginner Summary
           </Button>
           <Button 
-            onClick={() => onSummaryType("technical")}
+            onClick={() => handleSummaryType("technical")} // Technical Summary
             disabled={isProcessing}
             variant="secondary"
           >
