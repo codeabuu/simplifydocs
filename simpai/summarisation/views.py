@@ -16,16 +16,23 @@ from django.http import FileResponse
 from rest_framework.parsers import JSONParser
 
 class FileUploadView(APIView):
-    parser_classes = [MultiPartParser, FormParser]
+  parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request, *args, **kwargs):
-        # Save the uploaded file
-        file_serializer = UploadedFileSerializer(data=request.data)
-        if file_serializer.is_valid():
-            uploaded_file = file_serializer.save()
-            file_id = uploaded_file.id
-            return Response({"file_id": file_id})
-        return Response(file_serializer.errors, status=400)
+  def post(self, request, *args, **kwargs):
+    # Save the uploaded file
+    file_serializer = UploadedFileSerializer(data=request.data)
+    if file_serializer.is_valid():
+      uploaded_file = file_serializer.save()
+      file_id = uploaded_file.id
+
+      # Print the uploaded file ID for debugging purposes
+      print(f"File uploaded: {file_id}")
+
+      # Prepare and return the response
+      response = Response({"file_id": file_id})
+      return response
+    else:
+      return Response(file_serializer.errors, status=400)
 
 class SummarizeView(APIView):
     parser_classes = [JSONParser]

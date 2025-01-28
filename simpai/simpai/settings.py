@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'search',
     'django_extensions',
     'corsheaders',
+    'gpt',
 ]
 
 CORS_ALLOWED_ORIGINS = [

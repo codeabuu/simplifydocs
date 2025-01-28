@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from summarisation.views import FileUploadView, AskQuestionsView, SummarizeView
 from spreadsheet.views import SpreadsheetUploadView, AnalyzeDataView, GenerateChartView, AskQuestionView
+from gpt.views import AskGPTView
 from . import views
 
 
@@ -14,6 +15,9 @@ urlpatterns = [
     path('csv/chart/', GenerateChartView.as_view(), name='generate_chart'),
     path('csv/ask/', AskQuestionView.as_view(), name='ask_question'),
     path('csv/', views.spreadsheet_view, name='spreadsheet'),
+
+    #gpt
+    path('gpt/ask/', AskGPTView.as_view(), name='ask_gpt'),
 
     path('summarisation/', views.index, name='index'),
     #path('summarisation/pdf_features/', TemplateView.as_view(template_name='pdf_features.html'), name='pdf-features'),
