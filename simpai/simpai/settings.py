@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'summarisation',
     'spreadsheet',
-    'search',
     'django_extensions',
     'corsheaders',
     'gpt',

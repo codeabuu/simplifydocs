@@ -4,15 +4,10 @@ import { Card } from '@/components/ui/card';
 import { Brain } from 'lucide-react';
 import { SpreadsheetAnalysis } from '@/components/spreadsheetMain';
 import { PdfProcessing } from '@/components/pdfMain';
-import { ChatInterface } from '@/components/ChatInterface';
+import { GeneralChatInterface } from '@/components/generalChat';
 
 const Index = () => {
   const [fileId, setFileId] = useState<string | null>(null);
-
-  const handleCustomPrompt = async (prompt: string) => {
-    // Handle custom prompt logic here
-    console.log('Custom prompt:', prompt);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,7 +21,7 @@ const Index = () => {
             <h2 className="text-xl font-semibold">Ask Me Anything</h2>
           </div>
           <div className="p-4">
-            <ChatInterface fileId={fileId} onSendMessage={handleCustomPrompt} />
+            <GeneralChatInterface />
           </div>
         </Card>
 
@@ -41,13 +36,12 @@ const Index = () => {
             <SpreadsheetAnalysis
               fileId={fileId}
               setFileId={setFileId}
-              onCustomPrompt={handleCustomPrompt}
             />
           </TabsContent>
 
           {/* PDF Tab */}
           <TabsContent value="pdf" className="space-y-8">
-            <PdfProcessing onCustomPrompt={handleCustomPrompt} />
+            <PdfProcessing />
           </TabsContent>
         </Tabs>
       </div>

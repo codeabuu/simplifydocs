@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { blob } from 'stream/consumers';
 
 const API_BASE_URL = 'http://127.0.0.1:8000/';
 
@@ -53,18 +54,37 @@ export const uploadPdf = async (file: File) => {
   return response.data;
 };
 
-export const askCustom = async (fileId: string, question: string) => {
+export const askCustom = async (fileId: string, custom_prompt: string): Promise<Blob> => {
   const response = await axios.post(`${API_BASE_URL}/summarisation/ask/`, {
     file_id: fileId,
-    question,
-  });
-  return response.data;
+    custom_prompt,
+  },
+  {
+    //headers: { "Content-Type": "application/json" },
+    responseType: 'blob',
+  }
+);
+return response.data
 };
 
-export const summarizePdf = async (fileId: string, promptKey: string = 'simple_summary') => {
-  const response = await axios.post(`${API_BASE_URL}/summarisation/summarize/`, {
-    file_id: fileId,
-    prompt_key: promptKey,
+export const summarizePdf = async (fileId: string, promptKey: string): Promise<Blob> => {
+  const response = await axios.post(
+    `${API_BASE_URL}/summarisation/summarize/`,
+    {
+      file_id: fileId,
+      prompt_key: promptKey,
+    },
+    {
+      responseType: 'blob', // Ensure the response is treated as a Blob
+    }
+  );
+  return response.data; // This will be a Blob object
+};
+
+//gpt3 apis
+export const askGPT = async (question: string) => {
+  const response = await axios.post(`${API_BASE_URL}/gpt/ask/`, {
+    question,
   });
   return response.data;
 };

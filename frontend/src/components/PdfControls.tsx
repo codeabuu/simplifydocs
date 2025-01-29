@@ -2,13 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from 'sonner';
-import { summarizePdf } from '@/lib/api'; // Import the summarizePdf function
 
 interface PdfControlsProps {
   onSummaryType: (type: string) => void;
-  onCustomPrompt: (prompt: string) => Promise<void>;
+  onCustomPrompt: (prompt: string) => void;
   onDownload: () => void;
   fileId: string | null;
+  isProcessing: boolean;
 }
 
 export const PdfControls = ({
@@ -16,30 +16,19 @@ export const PdfControls = ({
   onCustomPrompt,
   onDownload,
   fileId,
+  isProcessing,
 }: PdfControlsProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSummaryType = async (type: string) => {
+  const handleSummaryType = (type: string) => {
     if (!fileId) {
       toast.error('Please upload a PDF first');
       return;
     }
-
-    try {
-      setIsProcessing(true);
-      const response = await summarizePdf(fileId, type); // Call the summarizePdf API
-      onSummaryType(response); // Pass the response to the parent component
-      toast.success('Summary generated successfully!');
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      toast.error('Failed to generate summary');
-    } finally {
-      setIsProcessing(false);
-    }
+    onSummaryType(type); // Delegate to parent component
   };
 
-  const handleCustomPrompt = async () => {
+  const handleCustomPrompt = () => {
     if (!fileId) {
       toast.error('Please upload a PDF first');
       return;
@@ -48,17 +37,8 @@ export const PdfControls = ({
       toast.error('Please enter a custom prompt');
       return;
     }
-    try {
-      setIsProcessing(true);
-      await onCustomPrompt(customPrompt); // Call the parent component's custom prompt handler
-      setCustomPrompt(""); // Clear the input field
-      toast.success('Custom prompt processed successfully!');
-    } catch (error) {
-      console.error('Error processing custom prompt:', error);
-      toast.error('Failed to process custom prompt');
-    } finally {
-      setIsProcessing(false);
-    }
+    onCustomPrompt(customPrompt); // Delegate to parent component
+    setCustomPrompt(""); // Clear the input field
   };
 
   return (

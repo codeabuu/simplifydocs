@@ -1,37 +1,30 @@
 import { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf'; // Import react-pdf components
+import { Document, Page, pdfjs } from 'react-pdf';
 import { PdfUpload } from '@/components/PdfUpload';
 import { PdfControls } from '@/components/PdfControls';
 import { toast } from 'sonner';
 import { askCustom, summarizePdf, uploadPdf } from '@/lib/api';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Configure pdfjs worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.js",
+  import.meta.url
+).toString();
 
-interface PdfProcessingProps {
-  onCustomPrompt: (prompt: string) => Promise<void>;
-  onDownload: () => void;
-  onSummaryType: (type: string) => void;
-  fileId: string | null;
-}
-
-export const PdfProcessing = ({
-  onCustomPrompt,
-  onDownload,
-  onSummaryType
-}: PdfProcessingProps) => {
+export const PdfProcessing = () => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
-  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null); // URL for the generated PDF
+  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
   const [fileId, setFileId] = useState<string | null>(null);
-  const [numPages, setNumPages] = useState<number | null>(null); // Number of pages in the generated PDF
+  const [numPages, setNumPages] = useState<number | null>(null);
 
   const handlePdfUpload = async (file: File) => {
     try {
       setIsProcessingPdf(true);
-      const response = await uploadPdf(file); // Upload the PDF
+      const response = await uploadPdf(file);
       setPdfFile(file);
-      setFileId(response.file_id); // Set the fileId from the response
+      setFileId(response.file_id);
       toast.success('PDF uploaded successfully!');
     } catch (error) {
       console.error('Error uploading PDF:', error);
@@ -47,7 +40,7 @@ export const PdfProcessing = ({
     setGeneratedPdfUrl(null);
   };
 
-  const handleSummarizePdf = async (type: string) => {
+  const handleSummaryType = async (type: string) => {
     if (!fileId) {
       toast.error('No PDF uploaded yet');
       return;
@@ -55,10 +48,13 @@ export const PdfProcessing = ({
 
     try {
       setIsProcessingPdf(true);
-      const response = await summarizePdf(fileId, type); // Call API to generate PDF content/output
+      const blob = await summarizePdf(fileId, type);
+      console.log("Blob:", blob);
 
-      // Assuming the backend returns a URL to the generated PDF
-      setGeneratedPdfUrl(response.generatedPdfUrl); // Set the URL for the generated PDF
+      const pdfUrl = URL.createObjectURL(blob);
+      console.log("PDF URL:", pdfUrl);
+
+      setGeneratedPdfUrl(pdfUrl); // Set the URL for the generated PDF
       toast.success('Generated PDF successfully!');
     } catch (error) {
       console.error('Error generating PDF output:', error);
@@ -68,7 +64,7 @@ export const PdfProcessing = ({
     }
   };
 
-  const handleAskPdf = async (prompt: string) => {
+  const handleCustomPrompt = async (prompt: string) => {
     if (!fileId) {
       toast.error('No PDF uploaded yet');
       return;
@@ -76,10 +72,11 @@ export const PdfProcessing = ({
 
     try {
       setIsProcessingPdf(true);
-      const response = await askCustom(fileId, prompt); // Call ask API with the custom prompt
 
-      // Assuming the backend returns a URL to the generated PDF
-      setGeneratedPdfUrl(response.generatedPdfUrl); // Set the URL for the generated PDF
+      // Convert the response to a Blob and create a URL
+      const blob = await askCustom(fileId, prompt);
+      const pdfUrl = URL.createObjectURL(blob);
+      setGeneratedPdfUrl(pdfUrl); // Set the URL for the generated PDF
       toast.success('Custom prompt processed successfully!');
     } catch (error) {
       console.error('Error processing custom prompt:', error);
@@ -94,7 +91,6 @@ export const PdfProcessing = ({
       toast.error('No generated PDF available to download');
       return;
     }
-    // Download logic here
     const link = document.createElement('a');
     link.href = generatedPdfUrl;
     link.download = 'generated-pdf.pdf';
@@ -102,7 +98,7 @@ export const PdfProcessing = ({
   };
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages); // Set the number of pages in the generated PDF
+    setNumPages(numPages);
   };
 
   return (
@@ -125,8 +121,7 @@ export const PdfProcessing = ({
             </div>
 
             {/* Generated PDF Section */}
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <p className="font-medium">Generated PDF:</p>
+            <div className="bg-white p-8 rounded-lg shadow-sm min-h-[400px] overflow-auto">
               {isProcessingPdf ? (
                 <p className="text-sm text-gray-500">Processing...</p>
               ) : generatedPdfUrl ? (
@@ -134,19 +129,24 @@ export const PdfProcessing = ({
                   <Document
                     file={generatedPdfUrl}
                     onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={(error) => console.error("Failed to load PDF:", error)}
                   >
                     {Array.from(new Array(numPages), (el, index) => (
                       <Page
                         key={`page_${index + 1}`}
                         pageNumber={index + 1}
-                        width={800} // Adjust width as needed
+                        width={800}
                         className="mb-4"
                       />
                     ))}
                   </Document>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Your generated PDF will appear here.</p>
+                <div className="h-full flex items-center justify-center">
+                  <p className="text-gray-500">
+                    Your generated PDF will appear here.
+                  </p>
+                </div>
               )}
             </div>
           </div>
@@ -155,10 +155,11 @@ export const PdfProcessing = ({
 
       <div className="space-y-8">
         <PdfControls
-          onCustomPrompt={onCustomPrompt}
+          onCustomPrompt={handleCustomPrompt}
           onDownload={handleDownload}
-          onSummaryType={onSummaryType}
+          onSummaryType={handleSummaryType}
           fileId={fileId}
+          isProcessing={isProcessingPdf}
         />
       </div>
     </div>
