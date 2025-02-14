@@ -6,7 +6,7 @@ import { SpreadsheetAnalysis } from '@/components/spreadsheetMain';
 import { PdfProcessing } from '@/components/pdfMain';
 import { GeneralChatInterface } from '@/components/generalChat';
 
-const Index = () => {
+const Dashboard = () => {
   const [fileId, setFileId] = useState<string | null>(null);
 
   return (
@@ -49,4 +49,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
