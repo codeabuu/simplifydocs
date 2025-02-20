@@ -6,9 +6,11 @@ from .serializers import UploadedSpreadsheetSerializer
 from .utils import parse_spreadsheet, analyze_data, generate_dynamic_charts, ask_question, preprocess_file, preprocess_file_ask
 import os
 import pandas as pd
+from rest_framework.permissions import IsAuthenticated
 
 class SpreadsheetUploadView(APIView):
     parser_classes = [MultiPartParser]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         # Save the uploaded file
