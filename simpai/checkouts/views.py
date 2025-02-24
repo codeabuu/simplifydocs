@@ -15,7 +15,6 @@ from django.shortcuts import get_object_or_404
 
 
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="", cast=str)
-STRIPE_PUBLIC_KEY = 'pk_test_51QoA8wGV8d9BFxz3sqMf8JNMaJlqJbAS84lqiVGIClPbr4PDLmguSzE5xlCD6uL3A6HMzF9toSHvxKeJKsAU7Wyw00Fr8WYV2v'
 stripe.api_key = STRIPE_SECRET_KEY
 
 User=get_user_model()
