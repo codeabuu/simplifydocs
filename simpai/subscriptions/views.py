@@ -5,6 +5,7 @@ from subscriptions.models import SubscriptionPrice, UserSubscription
 from subscriptions import utils as sub_utils
 from django.urls import reverse
 from django.contrib import messages
+from django.http import JsonResponse
 
 @login_required
 def user_subscription_view(request):
@@ -35,4 +36,5 @@ def user_subscription_cancel_view(request):
 
 def subscription_price_view(request, interval="month"):
     prices = SubscriptionPrice.objects.all()
-    return render(request, "subscriptions/pricing.html", {"prices": prices})
+    prices_data = list(prices.values('id', 'name', 'price', 'interval'))
+    return JsonResponse(prices_data, safe=False)

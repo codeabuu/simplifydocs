@@ -27,9 +27,11 @@ urlpatterns = [
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/resend-confirmation-email/', resend_confirmation_email, name='resend_confirmation_email'),
     path('api/auth/password/reset/', request_password_reset, name='request_password_reset'),
-    path('api/product-price/<str:price_id>/', checkout_views.product_price_redirect_view, name="product-price-redirect"),
-    path('api/checkout/', checkout_views.checkout_redirect_view, name='checkout-redirect'),
+    path('api/checkout/sub-price/<int:price_id>/', checkout_views.product_price_redirect_view, name="sub-price-checkout"),
+    path('checkout/start', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
+    path('api/subscription-prices/', sub_views.subscription_price_view, name='subscription-prices'),
     path('api/checkout/finalize/', checkout_views.checkout_finalize_view, name='checkout-finalize'),
+
 
 
     path("login/", login_view, name="login"),

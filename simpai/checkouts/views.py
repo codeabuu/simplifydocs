@@ -11,6 +11,8 @@ from django.contrib import messages
 import stripe
 import datetime
 from decouple import config
+from django.shortcuts import get_object_or_404
+
 
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="", cast=str)
 STRIPE_PUBLIC_KEY = 'pk_test_51QoA8wGV8d9BFxz3sqMf8JNMaJlqJbAS84lqiVGIClPbr4PDLmguSzE5xlCD6uL3A6HMzF9toSHvxKeJKsAU7Wyw00Fr8WYV2v'
@@ -20,7 +22,10 @@ User=get_user_model()
 BASE_URL=settings.BASE_URL
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 def product_price_redirect_view(request, price_id=None, *args, **kwargs):
     request.session['checkout_subscription_price_id'] = price_id
     return redirect('stripe-checkout-start')
@@ -38,7 +43,7 @@ def checkout_redirect_view(request):
         obj = None
     
     if checkout_subscription_price_id is None:
-        return redirect("pricing")
+        return redirect("http://localhost:8080/pricing")
 
     customer_stripe_id = request.user.customer.stripe_id
     success_url_path = reverse("stripe-checkout-end")
