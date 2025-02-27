@@ -20,7 +20,7 @@ from profiles.views import request_password_reset
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', landing_views.landing_page_view, name='home'),
-    path('accounts/', include('allauth.urls')),
+    #path('accounts/', include('allauth.urls')),
     #path("api/auth/registration/account-confirm-email/<str:key>/", allauthemailconf, name="account_confirm_email"),
     path("api/auth/registration/account-confirm-email/<str:key>/", confirm_email, name="account_confirm_email"),
     path('api/auth/', include('dj_rest_auth.urls')),
@@ -28,14 +28,14 @@ urlpatterns = [
     path('api/auth/resend-confirmation-email/', resend_confirmation_email, name='resend_confirmation_email'),
     path('api/auth/password/reset/', request_password_reset, name='request_password_reset'),
     path('api/checkout/sub-price/<int:price_id>/', checkout_views.product_price_redirect_view, name="sub-price-checkout"),
-    path('checkout/start', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
+    path('checkout/start/', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
     path('api/subscription-prices/', sub_views.subscription_price_view, name='subscription-prices'),
     path('api/checkout/finalize/', checkout_views.checkout_finalize_view, name='checkout-finalize'),
 
 
 
-    path("login/", login_view, name="login"),
-    path("register/", register_view, name="register"),
+    #path("login/", login_view, name="login"),
+    #path("register/", register_view, name="register"),
     path('pricing/', sub_views.subscription_price_view, name='pricing'),
     path("profiles/", include('profiles.urls')),
     path('checkout/sub_price/<int:price_id>/', checkout_views.product_price_redirect_view, name="sub-price-checkout"),

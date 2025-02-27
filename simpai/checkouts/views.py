@@ -12,6 +12,11 @@ import stripe
 import datetime
 from decouple import config
 from django.shortcuts import get_object_or_404
+from urllib.parse import quote
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.response import Response
+
 
 
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="", cast=str)
@@ -27,9 +32,10 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def product_price_redirect_view(request, price_id=None, *args, **kwargs):
     request.session['checkout_subscription_price_id'] = price_id
-    return redirect('stripe-checkout-start')
+    return checkout_redirect_view(request)
 
-@login_required
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def checkout_redirect_view(request):
     checkout_subscription_price_id = request.session.get(
         "checkout_subscription_price_id",
@@ -59,7 +65,7 @@ def checkout_redirect_view(request):
         raw=False
     )
 
-    return redirect(url)
+    return JsonResponse({"checkout_url": url}, status=200)
 
 def checkout_finalize_view(request):
     session_id = request.GET.get('session_id')

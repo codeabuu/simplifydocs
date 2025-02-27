@@ -7,6 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # settings.py
 FRONTEND_URL = "http://localhost:8080"
+LOGIN_URL = "http://localhost:8080/login"
+
+
 
 DEEPSEEK_API_KEY = config('DEEPSEEK_API_KEY')
 DATABASE_URL = config('DATABASE_URL', default=None)
