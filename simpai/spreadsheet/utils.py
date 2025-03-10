@@ -13,6 +13,7 @@ from django.conf import settings
 import seaborn as sns
 from concurrent.futures import ThreadPoolExecutor
 from openpyxl import load_workbook
+from django.core.cache import cache
 
 # Initialize DeepSeek client
 client = OpenAI(api_key=config('DEEPSEEK_API_KEY'), base_url="https://api.deepseek.com")
@@ -33,6 +34,12 @@ def parse_spreadsheet(file_path, sample_size=None):
     if file_path.endswith('.csv'):
         data = pd.read_csv(file_path, nrows=sample_size)
     elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+        data = pd.read_excel(file_path, nrows=sample_size)
+    elif file_path.endswith('.ods'):
+        data = pd.read_excel(file_path, nrows=sample_size)
+    elif file_path.endswith('.xlsm'):
+        data = pd.read_excel(file_path, nrows=sample_size)
+    elif file_path.endswith('.xlsb'):
         data = pd.read_excel(file_path, nrows=sample_size)
     else:
         raise ValueError("Unsupported file format. Please upload a CSV or Excel file.")
@@ -84,7 +91,7 @@ def ask_question(data_summary, question):
         messages=[
             {"role": "system", "content": (
                 "You are a data analysis assistant."
-                "Answer the user's question strictly based on the provided dataset summary."
+                "Answer the user's questions based on the provided dataset summary."
                 "If the question is unrelated to the dataset, respond with 'I'm sorry, I can only answer questions related to the dataset.'"
                 )},
             {"role": "user", "content": f"Dataset Summary:\n{summary_str}\n\nQuestion: {question}"},
@@ -95,29 +102,40 @@ def ask_question(data_summary, question):
 
 def preprocess_file_ask(file_path):
     """
-    Detect the file type (CSV or Excel) and preprocess it accordingly.
+    Process the file without loading everything into memory.
     """
     try:
-        # Determine file type based on extension
         if file_path.endswith('.csv'):
-            data = pd.read_csv(file_path)
+            data = pd.read_csv(file_path, chunksize=500)  # Read in chunks of 500 rows
         elif file_path.endswith('.xlsx'):
-            data = pd.read_excel(file_path, engine='openpyxl')
+            data = pd.read_excel(file_path, engine='openpyxl', chunksize=500)
         elif file_path.endswith('.xls'):
-            data = pd.read_excel(file_path, engine='xlrd')
+            data = pd.read_excel(file_path, engine='xlrd', chunksize=500)
         else:
             raise ValueError("Unsupported file format. Please upload .csv, .xlsx, or .xls files.")
         
-        # Generate a summary
         summary = {
-            "columns": data.columns.tolist(),
-            "data_types": data.dtypes.astype(str).tolist(),
-            "sample_data": data.head(10).to_dict(orient='records'),
-            "numeric_summary": data.describe().to_dict()
+            "columns": None,
+            "data_types": None,
+            "sample_data": [],
+            "numeric_summary": None
         }
+
+        # Process chunks
+        for chunk in data:
+            if summary["columns"] is None:
+                summary["columns"] = chunk.columns.tolist()
+                summary["data_types"] = chunk.dtypes.astype(str).tolist()
+                summary["numeric_summary"] = chunk.describe().to_dict()
+
+            summary["sample_data"].extend(chunk.head(10).to_dict(orient='records'))
+            if len(summary["sample_data"]) >= 100:
+                break  # Stop after getting enough samples
+        
         return summary
     except Exception as e:
         raise ValueError(f"Error processing file: {str(e)}")
+
     
 def preprocess_file(file_path):
     """

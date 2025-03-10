@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # settings.py
 FRONTEND_URL = "http://localhost:8080"
 LOGIN_URL = "http://localhost:8080/login"
-
+PASSWORD_RESET_TIMEOUT = 604800
 
 
 DEEPSEEK_API_KEY = config('DEEPSEEK_API_KEY')
@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     "allauth.socialaccount",
-    # 'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.google',
     # 'allauth.socialaccount.providers.microsoft',
     # 'allauth.socialaccount.providers.apple',
     "widget_tweaks",
@@ -84,7 +84,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',  # Optional, for browsable API
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',  # Default permission for API views
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -94,6 +94,7 @@ REST_AUTH = {
     'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
     'REGISTER_SERIALIZER': 'profiles.serializers.CustomRegisterSerializer',
     'EMAIL_CONFIRMATION_URL': 'http://localhost:8080/confirm-email/{key}',
+    'PASSWORD_RESET_CONFIRM': 'http://localhost:8080/reset-password-confirm/{uid}/{token}/',
 }
 
 CORS_ALLOW_CREDENTIALS = True
@@ -102,12 +103,16 @@ CORS_ALLOWED_ORIGINS = [
   # Allow requests from your frontend
 ]
 
+PASSWORD_RESET_TIMEOUT = 86400  # Token valid for 24 hours
+
+CSRF_COOKIE_NAME = "csrftoken"
+
 SESSION_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_SECURE = False 
 
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
-    "http://localhost:8000"
+    "http://localhost:8080"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -156,6 +161,8 @@ DATABASES = {
     }
 }
 
+DATABASE_URL = config("DATABASE_URL", default=None)
+
 if DATABASE_URL is not None:
     import dj_database_url
     DATABASES = {
@@ -191,6 +198,8 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION="mandatory"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[SIMPAI]"
 
+ACCOUNT_ADAPTER = 'profiles.views.CustomAccountAdapter'
+
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
@@ -200,10 +209,22 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': config("GOOGLE_CLIENT_ID", default=""),  # Add your Google Client ID
+            'secret': config("GOOGLE_CLIENT_SECRET", default=""),  # Add your Google Client Secret
+            'key': '',  # Optional, for additional configuration
+        }
+    }
 }
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 

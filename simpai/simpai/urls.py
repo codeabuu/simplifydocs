@@ -14,25 +14,41 @@ from checkouts import views as checkout_views
 from landing import views as landing_views
 #from allauth.account.views import confirm_email as allauthemailconf
 from profiles.views import confirm_email, resend_confirmation_email
-from profiles.views import request_password_reset
+from dj_rest_auth.views import PasswordResetView
+from django.contrib.auth import views as auth_views
+from profiles.views import PasswordResetRequestView, PasswordResetConfirmView
+from django.views.decorators.csrf import csrf_exempt
+from allauth.account.views import PasswordResetView
+from profiles.views import request_password_reset, verify_reset_token, reset_password
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', landing_views.landing_page_view, name='home'),
-    #path('accounts/', include('allauth.urls')),
+    path('auth/', include('allauth.urls')),
     #path("api/auth/registration/account-confirm-email/<str:key>/", allauthemailconf, name="account_confirm_email"),
-    path("api/auth/registration/account-confirm-email/<str:key>/", confirm_email, name="account_confirm_email"),
+    #path("api/auth/registration/account-confirm-email/<str:key>/", confirm_email, name="account_confirm_email"),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
     path('api/auth/resend-confirmation-email/', resend_confirmation_email, name='resend_confirmation_email'),
-    path('api/auth/password/reset/', request_password_reset, name='request_password_reset'),
+    path("auth/password/reset/", csrf_exempt(PasswordResetView.as_view()), name="account_reset_password"),
+    path('api/auth/password/reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path('api/auth/password/reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('api/auth/password/reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('api/auth/password/reset/complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('api/checkout/sub-price/<int:price_id>/', checkout_views.product_price_redirect_view, name="sub-price-checkout"),
     path('checkout/start/', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
     path('api/subscription-prices/', sub_views.subscription_price_view, name='subscription-prices'),
     path('api/checkout/finalize/', checkout_views.checkout_finalize_view, name='checkout-finalize'),
 
-
+    path('accounts/', include('allauth.urls')),
+    path('api/confirm-email/', confirm_email, name='account_confirm_email'),
+    path('resend-confirmation-email/', resend_confirmation_email, name='resend_confirmation_email'),
+    path('api/password-reset/request/', request_password_reset, name='request_password_reset'),
+    path('api/password-reset/verify/<str:token>/', verify_reset_token, name='verify_reset_token'),
+    path('api/password-reset/reset/<str:token>/', reset_password, name='reset_password'),
+    #path('send-confirmation-email/', send_confirmation_email, name='send_confirmation_email'),
+     
 
     #path("login/", login_view, name="login"),
     #path("register/", register_view, name="register"),

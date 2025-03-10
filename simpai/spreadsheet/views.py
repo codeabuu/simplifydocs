@@ -7,7 +7,18 @@ from .utils import parse_spreadsheet, analyze_data, generate_dynamic_charts, ask
 import os
 import pandas as pd
 from rest_framework.permissions import IsAuthenticated
+import uuid
+import logging
+import numpy as np
+from django.http import StreamingHttpResponse
+import json
+import time
 
+def clean_dataframe(df):
+    """Replace NaN, Infinity, and -Infinity with None for JSON serialization."""
+    return df.replace([np.nan, np.inf, -np.inf], None)
+
+logger = logging.getLogger(__name__)
 class SpreadsheetUploadView(APIView):
     parser_classes = [MultiPartParser]
     permission_classes = [IsAuthenticated]
@@ -16,13 +27,19 @@ class SpreadsheetUploadView(APIView):
         # Save the uploaded file
         file_serializer = UploadedSpreadsheetSerializer(data=request.data)
         if file_serializer.is_valid():
-            spreadsheet = file_serializer.save()
+            spreadsheet = file_serializer.save(user=request.user)
             file_path = spreadsheet.file.path
 
             # Parse the file
             try:
                 data = parse_spreadsheet(file_path)
+                data = clean_dataframe(data)
                 preview = data.head().to_dict(orient='records')
+
+                request.session['analyzed_data'] = None
+                request.session['generated_charts'] = None
+                request.session['question_answers'] = None
+
                 return Response({"preview": preview, "file_id": spreadsheet.id})
             except ValueError as e:
                 return Response({"error": str(e)}, status=400)
@@ -30,28 +47,42 @@ class SpreadsheetUploadView(APIView):
             return Response(file_serializer.errors, status=400)
 
 class AnalyzeDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         file_id = request.data.get('file_id')
         sample_size = request.data.get('sample_size', 10)
         print(f"Received file_id: {file_id}")
+
+        if not file_id:
+            return Response({"error": "file_id is required."}, status=400)
+        
         try:
             spreadsheet = UploadedSpreadsheet.objects.get(id=file_id)
             file_path = spreadsheet.file.path
 
             # Parse the file
             data = parse_spreadsheet(file_path, sample_size=int(sample_size))
+            # data = clean_dataframe(data)
 
             # Analyze the data
             chart_suggestion = analyze_data(data)
+            request.session['analyzed_data'] = chart_suggestion
+
             return Response({"chart_suggestion": chart_suggestion})
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 
 class GenerateChartView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         file_id = request.data.get('file_id')
         sample_size = request.data.get('sample_size', 1000)
+        
+        if not file_id:
+            return Response({"error": "file_id is required."}, status=400)
         
         try:
             spreadsheet = UploadedSpreadsheet.objects.get(id=file_id)
@@ -64,6 +95,7 @@ class GenerateChartView(APIView):
             if isinstance(data, dict):
                 data = pd.DataFrame(data)
             
+            # data = clean_dataframe(data)
             if sample_size is not None:
                 charts = generate_dynamic_charts(data, sample_size=int(sample_size))
             # Generate dynamic charts
@@ -72,6 +104,8 @@ class GenerateChartView(APIView):
             if not charts:
                 return Response({"error": "No suitable chart found for the dataset."}, status=400)
             
+            request.session['generated_charts'] = charts
+
             return Response({"charts": charts})
 
         except ValueError as e:
@@ -80,12 +114,23 @@ class GenerateChartView(APIView):
         except Exception as e:
             return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
+
+
 class AskQuestionView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         file_id = request.data.get('file_id')
         question = request.data.get('question')
+
+        if not file_id:
+            return Response({"error": "file_id is required."}, status=400)
+
+        if not question:
+            return Response({"error": "Please enter your question."}, status=400)
+        
         try:
-            spreadsheet = UploadedSpreadsheet.objects.get(id=file_id)
+            spreadsheet = UploadedSpreadsheet.objects.get(id=file_id, user=request.user)
             file_path = spreadsheet.file.path
             print(f"File path: {file_path}")
 
@@ -93,8 +138,18 @@ class AskQuestionView(APIView):
             data_summary = preprocess_file_ask(file_path)
 
             # Ask the question using the data summary
-            answer = ask_question(data_summary, question)
-            return Response({"answer": answer})
+            def stream_response():
+                answer = ask_question(data_summary, question)
+                for word in answer.split():
+                    yield f"data: {json.dumps({'word': word})}\n\n"
+                    time.sleep(0.1)
+
+            #request.session['question_answers'] = {question: answer}
+
+            #return Response({"answer": answer})
+            response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+            response['Cache-Control'] = 'no-cache'
+            return response
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)

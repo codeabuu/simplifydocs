@@ -16,7 +16,7 @@ from urllib.parse import quote
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.response import Response
-
+from django.http import HttpResponseRedirect
 
 
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="", cast=str)
@@ -122,6 +122,9 @@ def checkout_finalize_view(request):
             setattr(_user_sub_obj, k, v)
         _user_sub_obj.save()
         messages.success(request, "Your plan duration has been extended")
-        return redirect(_user_sub_obj.get_absolute_url())
-    context = {}
-    return render(request, "checkout/success.html", context)
+        # return redirect(_user_sub_obj.get_absolute_url())
+    
+    subscription_type = "monthly" if sub_obj.interval == "month" else "yearly"
+    redirect_url = f"http://localhost:8080/subscription-success?type={subscription_type}"
+    
+    return HttpResponseRedirect(redirect_url)

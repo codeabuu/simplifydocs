@@ -14,15 +14,40 @@ import os
 from django.conf import settings
 from django.http import FileResponse
 from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+import uuid
+import logging
+from django.http import FileResponse
+
+
+logger = logging.getLogger(__name__)
+
+class FileWrapper:
+    def __init__(self, file, path):
+        self.file = file
+        self.path = path
+
+    def read(self, *args, **kwargs):
+        return self.file.read(*args, **kwargs)
+
+    def close(self):
+        self.file.close()
+        if os.path.exists(self.path):
+            try:
+                os.remove(self.path)
+            except PermissionError as e:
+                logger.warning(f"Could not delete file {self.path}: {str(e)}")
+
 
 class FileUploadView(APIView):
   parser_classes = [MultiPartParser, FormParser]
+  permission_classes = [IsAuthenticated]
 
   def post(self, request, *args, **kwargs):
     # Save the uploaded file
     file_serializer = UploadedFileSerializer(data=request.data)
     if file_serializer.is_valid():
-      uploaded_file = file_serializer.save()
+      uploaded_file = file_serializer.save(user=request.user)
       file_id = uploaded_file.id
 
       # Print the uploaded file ID for debugging purposes
@@ -36,6 +61,7 @@ class FileUploadView(APIView):
 
 class SummarizeView(APIView):
     parser_classes = [JSONParser]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         file_id = request.data.get("file_id")
@@ -44,9 +70,10 @@ class SummarizeView(APIView):
         if not file_id:
             return Response({"error": "file_id is required."}, status=400)
 
+        pdf_path = None
         try:
-            # Retrieve the uploaded file
-            uploaded_file = UploadedFile.objects.get(id=file_id)
+            # Retrieve the uploaded file and validate ownership
+            uploaded_file = UploadedFile.objects.get(id=file_id, user=request.user)
             file_path = uploaded_file.file.path
 
             # Extract text from the file
@@ -55,22 +82,32 @@ class SummarizeView(APIView):
             # Summarize the text
             summary = summarize_text(text, prompt_key)
 
-            pdf_path = os.path.join(settings.MEDIA_ROOT, f"{uploaded_file.file.name}_summary.pdf")
+            # Generate a unique filename for the PDF
+            pdf_filename = f"{uuid.uuid4()}_summary.pdf"
+            pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
+
+            # Generate the PDF
             generate_pdf(summary, pdf_path)
 
-            response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}_summary.pdf"'
+            # Serve the PDF for download
+            file = open(pdf_path, 'rb')
+            file_wrapper = FileWrapper(file, pdf_path)
+
+            response = FileResponse(file_wrapper, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
             return response
 
         except UploadedFile.DoesNotExist:
-            return Response({"error": "Invalid file_id. File not found."}, status=404)
+            return Response({"error": "File not found or access denied."}, status=404)
 
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
-        
+            logger.error(f"Error in SummarizeView: {str(e)}")
+            return Response({"error": "An internal error occurred."}, status=500)
 
 class AskQuestionsView(APIView):
+    permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser]
+
     def post(self, request, *args, **kwargs):
         file_id = request.data.get("file_id")
         custom_prompt = request.data.get("custom_prompt")
@@ -81,6 +118,7 @@ class AskQuestionsView(APIView):
         if not custom_prompt:
             return Response({"error": "Please enter your question."}, status=400)
 
+        pdf_path = None
         try:
             # Retrieve the uploaded file
             uploaded_file = UploadedFile.objects.get(id=file_id)
@@ -92,12 +130,15 @@ class AskQuestionsView(APIView):
             # Ask the question using the custom prompt
             answer = ask_question(text, custom_prompt)
 
-            pdf_path = os.path.join(settings.MEDIA_ROOT, f"{uploaded_file.file.name}_answer.pdf")
+            pdf_filename = f"{uuid.uuid4()}_answer.pdf"
+            pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
             generate_pdf(answer, pdf_path)
 
-            # Serve the PDF for download
-            response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}_answer.pdf"'
+            file = open(pdf_path, 'rb')
+            file_wrapper = FileWrapper(file, pdf_path
+                                       )
+            response = FileResponse(file_wrapper, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
             return response
 
         except UploadedFile.DoesNotExist:
@@ -105,7 +146,7 @@ class AskQuestionsView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-
+        
 
 class GenerateOriginalAudioView(APIView):
     parser_classes = [MultiPartParser]
