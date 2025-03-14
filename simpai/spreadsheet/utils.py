@@ -102,36 +102,26 @@ def ask_question(data_summary, question):
 
 def preprocess_file_ask(file_path):
     """
-    Process the file without loading everything into memory.
+    Detect the file type (CSV or Excel) and preprocess it accordingly.
     """
     try:
+        # Determine file type based on extension
         if file_path.endswith('.csv'):
-            data = pd.read_csv(file_path, chunksize=500)  # Read in chunks of 500 rows
+            data = pd.read_csv(file_path)
         elif file_path.endswith('.xlsx'):
-            data = pd.read_excel(file_path, engine='openpyxl', chunksize=500)
+            data = pd.read_excel(file_path, engine='openpyxl')
         elif file_path.endswith('.xls'):
-            data = pd.read_excel(file_path, engine='xlrd', chunksize=500)
+            data = pd.read_excel(file_path, engine='xlrd')
         else:
             raise ValueError("Unsupported file format. Please upload .csv, .xlsx, or .xls files.")
         
+        # Generate a summary
         summary = {
-            "columns": None,
-            "data_types": None,
-            "sample_data": [],
-            "numeric_summary": None
+            "columns": data.columns.tolist(),
+            "data_types": data.dtypes.astype(str).tolist(),
+            "sample_data": data.head(10).to_dict(orient='records'),
+            "numeric_summary": data.describe().to_dict()
         }
-
-        # Process chunks
-        for chunk in data:
-            if summary["columns"] is None:
-                summary["columns"] = chunk.columns.tolist()
-                summary["data_types"] = chunk.dtypes.astype(str).tolist()
-                summary["numeric_summary"] = chunk.describe().to_dict()
-
-            summary["sample_data"].extend(chunk.head(10).to_dict(orient='records'))
-            if len(summary["sample_data"]) >= 100:
-                break  # Stop after getting enough samples
-        
         return summary
     except Exception as e:
         raise ValueError(f"Error processing file: {str(e)}")

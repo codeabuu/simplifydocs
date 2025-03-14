@@ -22,6 +22,13 @@ from django.http import FileResponse
 
 logger = logging.getLogger(__name__)
 
+
+from rest_framework.permissions import BasePermission
+
+class IsOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user
+    
 class FileWrapper:
     def __init__(self, file, path):
         self.file = file
@@ -61,7 +68,7 @@ class FileUploadView(APIView):
 
 class SummarizeView(APIView):
     parser_classes = [JSONParser]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def post(self, request, *args, **kwargs):
         file_id = request.data.get("file_id")
@@ -105,7 +112,7 @@ class SummarizeView(APIView):
             return Response({"error": "An internal error occurred."}, status=500)
 
 class AskQuestionsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
     parser_classes = [JSONParser]
 
     def post(self, request, *args, **kwargs):
