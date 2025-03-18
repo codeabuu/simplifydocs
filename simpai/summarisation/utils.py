@@ -167,3 +167,32 @@ def text_to_speech(text, filename):
         return audio_path
     except Exception as e:
         raise ValueError(f"Failed to convert text to speech: {e}")
+    
+
+def gpt_chat(text, question):
+    """
+    Handles GPT-based chat interactions for user questions.
+
+    Args:
+        text (str): The text or data context for the chat.
+        question (str): The user's question.
+
+    Returns:
+        str: The GPT-generated response.
+    """
+    try:
+        client = OpenAI(
+            api_key=config("DEEPSEEK_API_KEY"),
+            base_url="https://api.deepseek.com"
+        )
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided text. If the question is unrelated to the text, respond with: 'This question is unrelated to the document or is not available in the document.'"},
+                {"role": "user", "content": f"Text:\n{text}\n\nQuestion:\n{question}"},
+            ],
+            stream=False
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error answering question: {str(e)}"

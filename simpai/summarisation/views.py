@@ -7,7 +7,8 @@ from .utils import (
     extract_text,
     summarize_text,
     ask_question,
-    text_to_speech
+    text_to_speech,
+    gpt_chat
 )
 from .pdfgen import generate_pdf
 import os
@@ -154,6 +155,51 @@ class AskQuestionsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=500)
         
+
+class GPTChatView(APIView):
+    permission_classes = [IsAuthenticated, IsOwner]
+    parser_classes = [JSONParser]
+
+    def post(self, request, *args, **kwargs):
+        file_id = request.data.get("file_id")
+        question = request.data.get("question")
+
+        if not file_id:
+            return Response({"error": "file_id is required."}, status=400)
+
+        if not question:
+            return Response({"error": "Please enter your question."}, status=400)
+
+        try:
+            # Retrieve the uploaded file
+            uploaded_file = UploadedFile.objects.get(id=file_id, user=request.user)
+            file_path = uploaded_file.file.path
+
+            # Extract text from the file
+            text = extract_text(file_path)
+
+            # Use GPT to answer the question
+            answer = gpt_chat(text, question)
+
+            # Generate a PDF for the answer (optional)
+            pdf_filename = f"{uuid.uuid4()}_gpt_answer.pdf"
+            pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
+            generate_pdf(answer, pdf_path)
+
+            # Serve the PDF for download (optional)
+            file = open(pdf_path, 'rb')
+            file_wrapper = FileWrapper(file, pdf_path)
+
+            response = FileResponse(file_wrapper, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            return response
+
+        except UploadedFile.DoesNotExist:
+            return Response({"error": "File not found or access denied."}, status=404)
+
+        except Exception as e:
+            logger.error(f"Error in GPTChatView: {str(e)}")
+            return Response({"error": "An internal error occurred."}, status=500)
 
 class GenerateOriginalAudioView(APIView):
     parser_classes = [MultiPartParser]

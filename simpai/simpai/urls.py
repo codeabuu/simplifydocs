@@ -3,8 +3,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-from summarisation.views import FileUploadView, AskQuestionsView, SummarizeView
-from spreadsheet.views import SpreadsheetUploadView, AnalyzeDataView, GenerateChartView, AskQuestionView
+from summarisation.views import FileUploadView, AskQuestionsView as pdprompt, SummarizeView, GPTChatView
+from spreadsheet.views import SpreadsheetUploadView, AnalyzeDataView, GenerateChartView
 from gpt.views import AskGPTView
 from . import views
 from auth.views import login_view, register_view
@@ -20,7 +20,7 @@ from profiles.views import PasswordResetRequestView, PasswordResetConfirmView
 from django.views.decorators.csrf import csrf_exempt
 from allauth.account.views import PasswordResetView
 from profiles.views import request_password_reset, verify_reset_token, reset_password
-
+from spreadsheet.views import AskQuestionView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -59,21 +59,21 @@ urlpatterns = [
          name='stripe-checkout-start'),
     path("checkout/success", checkout_views.checkout_finalize_view,
          name="stripe-checkout-end"),
-     path('accounts/billing', sub_views.user_subscription_view, name='user_subscription'),
-     path('accounts/billing/cancel/', sub_views.user_subscription_cancel_view, name="user_subscription_cancel"),
+    path('accounts/billing', sub_views.user_subscription_view, name='user_subscription'),
+    path('accounts/billing/cancel/', sub_views.user_subscription_cancel_view, name="user_subscription_cancel"),
 
     path('csv/upload/', SpreadsheetUploadView.as_view(), name='upload_spreadsheet'),
     path('csv/analyze/', AnalyzeDataView.as_view(), name='analyze_data'),
     path('csv/chart/', GenerateChartView.as_view(), name='generate_chart'),
-    path('csv/ask/', AskQuestionView.as_view(), name='ask_question'),
     path('csv/', views.spreadsheet_view, name='spreadsheet'),
+    path('csv/ask/', AskQuestionView.as_view(), name='ask_question'),
 
-    #gpt
     path('gpt/ask/', AskGPTView.as_view(), name='ask_gpt'),
-
+    path('gpt-chat/', GPTChatView.as_view(), name="gpt-chat"),
+    
     #path('summarisation/', views.index, name='index'),
     #path('summarisation/pdf_features/', TemplateView.as_view(template_name='pdf_features.html'), name='pdf-features'),
-    path('summarisation/ask/', AskQuestionsView.as_view(), name='ask-question'),
+    path('summarisation/ask/', pdprompt.as_view(), name='ask-question'),
     path('summarisation/upload/', FileUploadView.as_view(), name='file-upload'),
     path('summarisation/summarize/', SummarizeView.as_view(), name='summarize'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

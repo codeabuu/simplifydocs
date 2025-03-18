@@ -14,11 +14,11 @@ from django.http import StreamingHttpResponse
 import json
 import time
 
+
 def clean_dataframe(df):
     """Replace NaN, Infinity, and -Infinity with None for JSON serialization."""
     return df.replace([np.nan, np.inf, -np.inf], None)
 
-logger = logging.getLogger(__name__)
 class SpreadsheetUploadView(APIView):
     parser_classes = [MultiPartParser]
     permission_classes = [IsAuthenticated]
@@ -27,9 +27,10 @@ class SpreadsheetUploadView(APIView):
         # Save the uploaded file
         file_serializer = UploadedSpreadsheetSerializer(data=request.data)
         if file_serializer.is_valid():
-            spreadsheet = file_serializer.save(user=request.user)
+            spreadsheet = file_serializer.save()
             file_path = spreadsheet.file.path
 
+            print(f"Uploaded Spreadsheet ID: {spreadsheet.id}")  
             # Parse the file
             try:
                 data = parse_spreadsheet(file_path)
@@ -115,9 +116,21 @@ class GenerateChartView(APIView):
             return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
 
 
+from rest_framework.views import APIView
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.http import StreamingHttpResponse
+from .models import UploadedSpreadsheet
+from .utils import preprocess_file_ask, ask_question
+from asgiref.sync import sync_to_async
+import json
+import time
+from spreadsheet.utils import ask_question
 
 class AskQuestionView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser]
 
     def post(self, request, *args, **kwargs):
         file_id = request.data.get('file_id')
@@ -128,28 +141,29 @@ class AskQuestionView(APIView):
 
         if not question:
             return Response({"error": "Please enter your question."}, status=400)
-        
+
         try:
-            spreadsheet = UploadedSpreadsheet.objects.get(id=file_id, user=request.user)
+            # Retrieve the uploaded file asynchronously
+            spreadsheet = UploadedSpreadsheet.objects.get(id=file_id)
             file_path = spreadsheet.file.path
             print(f"File path: {file_path}")
 
             # Preprocess the file to generate a summary
             data_summary = preprocess_file_ask(file_path)
 
-            # Ask the question using the data summary
+            # Stream the response back to the frontend
             def stream_response():
                 answer = ask_question(data_summary, question)
                 for word in answer.split():
                     yield f"data: {json.dumps({'word': word})}\n\n"
                     time.sleep(0.1)
 
-            #request.session['question_answers'] = {question: answer}
-
-            #return Response({"answer": answer})
             response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
             response['Cache-Control'] = 'no-cache'
             return response
+
+        except UploadedSpreadsheet.DoesNotExist:
+            return Response({"error": "File not found or access denied."}, status=404)
 
         except Exception as e:
             return Response({"error": str(e)}, status=500)
