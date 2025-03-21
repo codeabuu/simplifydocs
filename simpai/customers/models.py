@@ -20,6 +20,8 @@ class Customer(models.Model):
     stripe_id = models.CharField(max_length=120, null=True, blank=True)
     init_email = models.EmailField(blank=True, null=True)
     init_email_confirmed = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=120, blank=True, null=True)
+    last_name = models.CharField(max_length=120, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.email}"
@@ -35,6 +37,8 @@ class Customer(models.Model):
 
 def allauth_user_signed_up_handler(request, user, *args, **kwargs):
     email = user.email
+    # user.first_name = request.POST.get("first_name", "")
+    # user.save()
     Customer.objects.create(user=user, init_email=email, init_email_confirmed=False)
 
 allauth_user_signed_up.connect(allauth_user_signed_up_handler)

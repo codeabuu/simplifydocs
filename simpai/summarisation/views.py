@@ -19,7 +19,10 @@ from rest_framework.permissions import IsAuthenticated
 import uuid
 import logging
 from django.http import FileResponse
-
+from django.http import StreamingHttpResponse
+import json
+import time
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -181,26 +184,39 @@ class GPTChatView(APIView):
             # Use GPT to answer the question
             answer = gpt_chat(text, question)
 
-            # Generate a PDF for the answer (optional)
-            pdf_filename = f"{uuid.uuid4()}_gpt_answer.pdf"
-            pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
-            generate_pdf(answer, pdf_path)
+            def stream_response():
+                for word in answer.split():
+                    yield f"data: {json.dumps({'word': word})}\n\n"
+                    time.sleep(0.1)
 
-            # Serve the PDF for download (optional)
-            file = open(pdf_path, 'rb')
-            file_wrapper = FileWrapper(file, pdf_path)
-
-            response = FileResponse(file_wrapper, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+            response = StreamingHttpResponse(stream_response(), content_type='text/event-stream')
+            response['Cache-Control'] = 'no-cache'
             return response
+        #     # Generate a PDF for the answer (optional)
+        #     pdf_filename = f"{uuid.uuid4()}_gpt_answer.pdf"
+        #     pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_filename)
+        #     generate_pdf(answer, pdf_path)
 
+        #     # Serve the PDF for download (optional)
+        #     file = open(pdf_path, 'rb')
+        #     file_wrapper = FileWrapper(file, pdf_path)
+
+        #     response = FileResponse(file_wrapper, content_type='application/pdf')
+        #     response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+        #     return response
+
+        # except UploadedFile.DoesNotExist:
+        #     return Response({"error": "File not found or access denied."}, status=404)
+
+        # except Exception as e:
+        #     logger.error(f"Error in GPTChatView: {str(e)}")
+        #     return Response({"error": "An internal error occurred."}, status=500)
         except UploadedFile.DoesNotExist:
-            return Response({"error": "File not found or access denied."}, status=404)
+            return Response({"error": "File not found or access denied."}, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
             logger.error(f"Error in GPTChatView: {str(e)}")
-            return Response({"error": "An internal error occurred."}, status=500)
-
+            return Response({"error": "An internal error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class GenerateOriginalAudioView(APIView):
     parser_classes = [MultiPartParser]
 

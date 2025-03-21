@@ -21,6 +21,8 @@ from django.views.decorators.csrf import csrf_exempt
 from allauth.account.views import PasswordResetView
 from profiles.views import request_password_reset, verify_reset_token, reset_password
 from spreadsheet.views import AskQuestionView
+from customers.views import UserProfileView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -48,7 +50,8 @@ urlpatterns = [
     path('api/password-reset/verify/<str:token>/', verify_reset_token, name='verify_reset_token'),
     path('api/password-reset/reset/<str:token>/', reset_password, name='reset_password'),
     #path('send-confirmation-email/', send_confirmation_email, name='send_confirmation_email'),
-     
+
+    path("api/profile/", UserProfileView.as_view(), name="get_user_profile"),
 
     #path("login/", login_view, name="login"),
     #path("register/", register_view, name="register"),
