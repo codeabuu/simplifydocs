@@ -22,7 +22,7 @@ from allauth.account.views import PasswordResetView
 from profiles.views import request_password_reset, verify_reset_token, reset_password
 from spreadsheet.views import AskQuestionView
 from customers.views import UserProfileView
-
+from subscriptions.views import check_subscription_status
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -42,6 +42,8 @@ urlpatterns = [
     path('checkout/start/', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
     path('api/subscription-prices/', sub_views.subscription_price_view, name='subscription-prices'),
     path('api/checkout/finalize/', checkout_views.checkout_finalize_view, name='checkout-finalize'),
+
+    path('api/check-subscription-status/', check_subscription_status, name='check-sub-status'),
 
     path('accounts/', include('allauth.urls')),
     path('api/confirm-email/', confirm_email, name='account_confirm_email'),
@@ -69,7 +71,7 @@ urlpatterns = [
     path('csv/analyze/', AnalyzeDataView.as_view(), name='analyze_data'),
     path('csv/chart/', GenerateChartView.as_view(), name='generate_chart'),
     path('csv/', views.spreadsheet_view, name='spreadsheet'),
-    path('csv/ask/', AskQuestionView.as_view(), name='ask_question'),
+    path('csv/ask/', AskQuestionView.as_view(), name='ask-question'),
 
     path('gpt/ask/', AskGPTView.as_view(), name='ask_gpt'),
     path('gpt-chat/', GPTChatView.as_view(), name="gpt-chat"),

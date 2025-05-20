@@ -13,7 +13,7 @@ import numpy as np
 from django.http import StreamingHttpResponse
 import json
 import time
-
+from django.core.cache import cache
 
 def clean_dataframe(df):
     """Replace NaN, Infinity, and -Infinity with None for JSON serialization."""
@@ -29,6 +29,11 @@ class SpreadsheetUploadView(APIView):
         if file_serializer.is_valid():
             spreadsheet = file_serializer.save()
             file_path = spreadsheet.file.path
+
+            cache_key = f"spreadsheet_preview_{spreadsheet.id}"
+            preview = cache.get(cache_key)
+
+            
 
             print(f"Uploaded Spreadsheet ID: {spreadsheet.id}")  
             # Parse the file

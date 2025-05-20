@@ -38,3 +38,24 @@ def subscription_price_view(request, interval="month"):
     prices = SubscriptionPrice.objects.all()
     prices_data = list(prices.values('id', 'name', 'price', 'interval'))
     return JsonResponse(prices_data, safe=False)
+
+
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_subscription_status(request):
+    try:
+        user_sub = UserSubscription.objects.get(user=request.user)
+        is_active = user_sub.is_active_status and not user_sub.user_cancelled
+        return Response({
+            'has_active_subscription': is_active,
+            'subscription_data': user_sub.serialize()
+        })
+    except UserSubscription.DoesNotExist:
+        return Response({
+            'has_active_subscription': False,
+            'subscription_data': None
+        })
