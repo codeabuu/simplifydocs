@@ -1,30 +1,48 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { PdfUpload } from '@/components/PdfUpload';
 import { PdfControls } from '@/components/PdfControls';
+import { PdfChatInterface } from '@/components/PdfChatInterface';
 import { toast } from 'sonner';
 import { askCustom, summarizePdf, uploadPdf } from '@/lib/api';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { useEffect } from 'react';
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.js",
+  'pdfjs-dist/build/pdf.worker.min.js',
   import.meta.url
 ).toString();
 
-export const PdfProcessing = () => {
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+interface PdfProcessingProps {
+  state: {
+    file: File | null;
+    fileId: string | null;
+    generatedPdfUrl: string | null;
+    messages: Array<{ id: string; text: string; sender: 'user' | 'ai' }>;
+  };
+  onStateChange: (state: any) => void;
+  onFileUpload: (file: File, fileId: string) => void;
+  onReset: () => void;
+}
+
+export const PdfProcessing = ({
+  state,
+  onStateChange,
+  onFileUpload,
+  onReset
+}: PdfProcessingProps) => {
+  const { file, fileId, generatedPdfUrl, messages } = state;
   const [isProcessingPdf, setIsProcessingPdf] = useState(false);
-  const [generatedPdfUrl, setGeneratedPdfUrl] = useState<string | null>(null);
-  const [fileId, setFileId] = useState<string | null>(null);
-  const [numPages, setNumPages] = useState<number | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handlePdfUpload = async (file: File) => {
     try {
       setIsProcessingPdf(true);
       const response = await uploadPdf(file);
-      setPdfFile(file);
-      setFileId(response.file_id);
+      onFileUpload(file, response.file_id);
       toast.success('PDF uploaded successfully!');
     } catch (error) {
       console.error('Error uploading PDF:', error);
@@ -35,9 +53,7 @@ export const PdfProcessing = () => {
   };
 
   const handleReplacePdf = () => {
-    setPdfFile(null);
-    setFileId(null);
-    setGeneratedPdfUrl(null);
+    onReset();
   };
 
   const handleSummaryType = async (type: string) => {
@@ -48,19 +64,43 @@ export const PdfProcessing = () => {
 
     try {
       setIsProcessingPdf(true);
-      const blob = await summarizePdf(fileId, type);
-      console.log("Blob:", blob);
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
+      setStatus('Processing...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      setStatus('Generating PDF...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      setStatus('Finishing...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setStatus('Uploading...(This might take upto 1 minute)');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const blob = await summarizePdf(fileId, type, { signal });
       const pdfUrl = URL.createObjectURL(blob);
-      console.log("PDF URL:", pdfUrl);
-
-      setGeneratedPdfUrl(pdfUrl); // Set the URL for the generated PDF
+      
+      onStateChange({
+        ...state,
+        generatedPdfUrl: pdfUrl
+      });
+      
+      setStatus('Done!');
       toast.success('Generated PDF successfully!');
     } catch (error) {
-      console.error('Error generating PDF output:', error);
-      toast.error('Failed to generate PDF');
+      if (error.name === 'AbortError') {
+        console.log('Request was canceled by the user.');
+        toast.info('Processing canceled.');
+      } else {
+        console.error('Error generating PDF output:', error);
+        toast.error('Failed to generate PDF');
+      }
     } finally {
       setIsProcessingPdf(false);
+      abortControllerRef.current = null;
+      setStatus(null);
     }
   };
 
@@ -72,17 +112,43 @@ export const PdfProcessing = () => {
 
     try {
       setIsProcessingPdf(true);
+      abortControllerRef.current = new AbortController();
+      const signal = abortControllerRef.current.signal;
 
-      // Convert the response to a Blob and create a URL
-      const blob = await askCustom(fileId, prompt);
+      setStatus('Processing...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      setStatus('Generating PDF...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      setStatus('Finishing...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setStatus('Uploading...(This might take upto 1 minute)');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const blob = await askCustom(fileId, prompt, { signal });
       const pdfUrl = URL.createObjectURL(blob);
-      setGeneratedPdfUrl(pdfUrl); // Set the URL for the generated PDF
+      
+      onStateChange({
+        ...state,
+        generatedPdfUrl: pdfUrl
+      });
+      
+      setStatus('Done!');
       toast.success('Custom prompt processed successfully!');
     } catch (error) {
-      console.error('Error processing custom prompt:', error);
-      toast.error('Failed to process custom prompt');
+      if (error.name === 'AbortError') {
+        console.log('Request was canceled by the user.');
+        toast.info('Processing canceled.');
+      } else {
+        console.error('Error processing custom prompt:', error);
+        toast.error('Failed to process custom prompt');
+      }
     } finally {
       setIsProcessingPdf(false);
+      abortControllerRef.current = null;
+      setStatus(null);
     }
   };
 
@@ -97,21 +163,32 @@ export const PdfProcessing = () => {
     link.click();
   };
 
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
+  const handleCancelProcessing = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsProcessingPdf(false);
+      setStatus(null);
+      toast.info('Processing canceled.');
+    }
+  };
+
+  const handleNewMessage = (message: { id: string; text: string; sender: 'user' | 'ai' }) => {
+    onStateChange({
+      ...state,
+      messages: [...messages, message]
+    });
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       <div className="md:col-span-2 space-y-8">
-        {!pdfFile ? (
+        {!file ? (
           <PdfUpload onFileUpload={handlePdfUpload} />
         ) : (
           <div className="animate-fadeIn">
-            {/* Uploaded File Section */}
             <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
               <p className="font-medium">Uploaded File:</p>
-              <p className="text-sm text-gray-500">{pdfFile.name}</p>
+              <p className="text-sm text-gray-500">{file.name}</p>
               <button
                 className="text-sm text-blue-600 mt-2"
                 onClick={handleReplacePdf}
@@ -120,26 +197,25 @@ export const PdfProcessing = () => {
               </button>
             </div>
 
-            {/* Generated PDF Section */}
             <div className="bg-white p-8 rounded-lg shadow-sm min-h-[400px] overflow-auto">
               {isProcessingPdf ? (
-                <p className="text-sm text-gray-500">Processing...</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-500">{status || 'Processing...'}</p>
+                  <button
+                    className="text-sm text-red-600 hover:text-red-700"
+                    onClick={handleCancelProcessing}
+                  >
+                    Cancel
+                  </button>
+                </div>
               ) : generatedPdfUrl ? (
                 <div className="mt-4">
-                  <Document
-                    file={generatedPdfUrl}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    onLoadError={(error) => console.error("Failed to load PDF:", error)}
-                  >
-                    {Array.from(new Array(numPages), (el, index) => (
-                      <Page
-                        key={`page_${index + 1}`}
-                        pageNumber={index + 1}
-                        width={800}
-                        className="mb-4"
-                      />
-                    ))}
-                  </Document>
+                  <iframe
+                    src={generatedPdfUrl}
+                    width="100%"
+                    height="500px"
+                    style={{ border: 'none' }}
+                  />
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
@@ -160,6 +236,13 @@ export const PdfProcessing = () => {
           onSummaryType={handleSummaryType}
           fileId={fileId}
           isProcessing={isProcessingPdf}
+        />
+
+        <PdfChatInterface 
+          fileId={fileId} 
+          messages={messages}
+          onSendMessage={handleCustomPrompt}
+          onNewMessage={handleNewMessage}
         />
       </div>
     </div>

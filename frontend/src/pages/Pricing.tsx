@@ -1,57 +1,63 @@
-import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CheckCircle2, X } from 'lucide-react';
+import { fetchSubscriptionPrices, startCheckout } from '@/lib/api';
 
 function Pricing() {
-  const pricingTiers = [
-    {
-      name: "Try for Free",
-      description: "For individuals and small projects.",
-      price: "$0",
-      period: "forever",
-      features: [
-        "10 uploads/month",
-        "Basic AI features",
-        "Limited chart generation",
-        "Email support"
-      ],
-      cta: "Start for Free",
-      highlighted: false
-    },
-    {
-      name: "Monthly",
-      description: "For professionals and teams.",
-      price: "$49",
-      period: "per month",
-      features: [
-        "100 uploads/month",
-        "Advanced AI features",
-        "Unlimited chart generation",
-        "PDF summarization",
-        "Priority support"
-      ],
-      cta: "Get Monthly",
-      highlighted: true
-    },
-    {
-      name: "Yearly",
-      description: "For long-term savings.",
-      price: "$499",
-      period: "per year",
-      features: [
-        "100 uploads/month",
-        "Advanced AI features",
-        "Unlimited chart generation",
-        "PDF summarization",
-        "Priority support",
-        "2 months free"
-      ],
-      cta: "Get Yearly",
-      highlighted: false
+  const [pricingTiers, setPricingTiers] = useState([]);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isLoggedIn = new URLSearchParams(location.search).get('loggedIn') === 'true';
+
+  // Fetch pricing data from the backend
+  useEffect(() => {
+    fetchSubscriptionPrices()
+      .then(data => {
+        const transformedData = data.map(tier => ({
+          id: tier.id,
+          name: tier.name,
+          description: tier.description || "Best option for personal use & for your next project.",
+          price: tier.price,
+          period: tier.interval === "month" ? "per month" : "per year",
+          features: [
+            "Individual configuration",
+            "No setup, or hidden fees",
+            `Team size: ${tier.interval === "month" ? "1 developer" : "10 developers"}`,
+            `Premium support: ${tier.interval === "month" ? "6 months" : "24 months"}`,
+            `Free updates: ${tier.interval === "month" ? "6 months" : "24 months"}`,
+          ],
+          cta: tier.interval === "month" ? "Get Monthly" : "Get Yearly",
+          highlighted: tier.interval === "month",
+        }));
+        setPricingTiers(transformedData);
+      })
+      .catch(error => console.error('Error fetching pricing data:', error));
+  }, []);
+
+  const handleCheckout = async (tierId: string) => {
+    setLoadingTier(tierId);
+    try {
+      await startCheckout(tierId, navigate);
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setLoadingTier(null);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-white">
+      {/* X Button to Return to Dashboard (Only If Logged In) */}
+      {isLoggedIn && (
+        <button
+          className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full shadow-md hover:bg-gray-200 transition"
+          onClick={() => navigate('/dashboard')}
+        >
+          <X className="w-6 h-6 text-gray-700" />
+        </button>
+      )}
+      
       {/* Pricing Header */}
       <div className="hero-gradient py-24">
         <div className="container">
@@ -82,7 +88,7 @@ function Pricing() {
                   {tier.description}
                 </p>
                 <div className="my-8">
-                  <span className="text-5xl font-bold">{tier.price}</span>
+                  <span className="text-5xl font-bold">${tier.price}</span>
                   <span className={tier.highlighted ? 'text-white/90' : 'text-gray-600'}>
                     /{tier.period}
                   </span>
@@ -98,52 +104,33 @@ function Pricing() {
                   ))}
                 </ul>
                 <button
-                  className={`w-full py-4 rounded-lg transition-all duration-300 ${
+                  onClick={() => handleCheckout(tier.id)}
+                  disabled={loadingTier === tier.id}
+                  className={`w-full py-4 rounded-lg transition-all duration-300 flex items-center justify-center ${
                     tier.highlighted
                       ? 'bg-white text-primary-500 hover:bg-primary-50'
                       : 'gradient-bg text-white hover:opacity-90'
                   }`}
                 >
-                  {tier.cta}
+                  {loadingTier === tier.id ? (
+                    <>
+                      <svg 
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-current" 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        fill="none" 
+                        viewBox="0 0 24 24"
+                      >
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    tier.cta
+                  )}
                 </button>
               </div>
             ))}
-          </div>
-
-          {/* FAQ Section */}
-          <div className="mt-24">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              <span className="gradient-text">Frequently Asked Questions</span>
-            </h2>
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Can I upgrade or downgrade my plan?
-                </h3>
-                <p className="text-gray-600">Yes! You can change your plan at any time. When upgrading, you'll be prorated for the remainder of your billing period.</p>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  What payment methods do you accept?
-                </h3>
-                <p className="text-gray-600">We accept all major credit cards, PayPal, and wire transfers for Enterprise plans.</p>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                  Do you offer refunds?
-                </h3>
-                <p className="text-gray-600">Yes, we offer a 30-day money-back guarantee for all paid plans.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="mt-24 text-center">
-            <h2 className="text-3xl font-bold mb-6">Still have questions?</h2>
-            <p className="text-gray-600 mb-8">Our team is here to help you find the perfect plan for your needs.</p>
-            <a href="mailto:support@lovable.ai" className="inline-flex items-center px-8 py-4 gradient-bg text-white rounded-lg hover:opacity-90 transition-all duration-300">
-              Contact Sales
-            </a>
           </div>
         </div>
       </div>

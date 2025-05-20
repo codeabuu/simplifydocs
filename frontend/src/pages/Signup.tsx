@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock, ArrowLeft, Eye, EyeOff, User } from "lucide-react"; // Import User icon
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { FcGoogle } from "react-icons/fc"; // Google icon
 import { BsMicrosoftTeams } from "react-icons/bs"; // Microsoft icon
 import { FaApple } from "react-icons/fa"; // Apple icon
+import { registerUser } from "@/lib/api"; // Import the registerUser function
+import axios from "axios";
 
 const Signup = () => {
   const [firstName, setFirstName] = useState("");
@@ -18,31 +20,72 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); // State to toggle confirm password visibility
   const [error, setError] = useState(""); // State to handle error messages
+  const [isLoading, setIsLoading] = useState(false); // State to handle loading state
+  const navigate = useNavigate(); // Hook for navigation
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true); // Set loading state to true
+    setError("");
 
     // Validate email and password confirmation
     if (email !== confirmEmail) {
       setError("Emails do not match. Please check your email entries.");
+      setIsLoading(false); // Reset loading state
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match. Please check your password entries.");
+      setIsLoading(false); // Reset loading state
       return;
     }
 
-    // Clear any previous errors
-    setError("");
+    try {
+      // Call the registerUser API
+      const response = await registerUser(
+        `${firstName} ${lastName}`, // Combine first and last name as the username
+        email,
+        password,
+        confirmPassword
+      );
 
-    // Add signup logic here
-    console.log("Signup attempt:", { firstName, lastName, email, password });
+      console.log("Registration successful:", response);
+      // Redirect the user to the login page after successful registration
+      navigate("/check-email");
+    } catch (error) {
+      console.error("Registration failed:", error);
+
+      // Handle API errors (e.g., display error message to the user)
+      if (error.response) {
+        console.error("Error details:", error.response.data);
+
+        if (error.response.data.email) {
+          setError(error.response.data.email.join(" "));
+        } else if (error.response.data.non_field_errors) {
+          // Handle general errors like "User already exists"
+          setError(error.response.data.non_field_errors.join(" "));
+        } else if (error.response.data.password1) {
+          // Display password-related errors
+          setError(error.response.data.password1.join(" ")); // Join multiple errors into a single string
+        } else if (error.response.data.non_field_errors) {
+          // Display non-field errors (e.g., duplicate email)
+          setError(error.response.data.non_field_errors.join(" "));
+        } else {
+          // Fallback error message
+          setError("Registration failed. Please check your inputs or use a different email.");
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false); // Reset loading state
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light/20 via-white to-secondary/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md relative">
+      <div className="w-full max-w-xl relative">
         {/* Top-right "Already have an account" link */}
         <div className="absolute top-0 -right-20">
           <span className="text-gray-600">Already have an account? </span>
@@ -60,14 +103,14 @@ const Signup = () => {
           Back to Home
         </Link>
 
-        <div className="glass p-8 rounded-2xl">
+        <div className="glass p-10 rounded-2xl">
           <div className="text-center mb-8">
             <img
               src="/logo.png" // Replace with your logo path
               alt="SimpAI Logo"
-              className="w-16 h-16 mx-auto mb-4"
+              className="w-20 h-20 mx-auto mb-4" // Increased logo size
             />
-            <h1 className="text-2xl font-bold text-gray-900">Create an Account</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1> {/* Increased font size */}
             <p className="text-gray-600 mt-2">
               Please sign up to get started
             </p>
@@ -75,27 +118,65 @@ const Signup = () => {
 
           {/* Social Login Buttons */}
           <div className="space-y-4 mb-6">
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+            {/* Google Button */}
+            <div
+              className="relative group"
+              title="Feature coming soon"
             >
-              <FcGoogle className="w-5 h-5" />
-              <span>Sign up with Google</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 cursor-not-allowed opacity-50"
+                disabled
+              >
+                <FcGoogle className="w-5 h-5" />
+                <span>Sign up with Google</span>
+              </Button>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                  Feature coming soon
+                </span>
+              </div>
+            </div>
+
+            {/* Microsoft Button */}
+            <div
+              className="relative group"
+              title="Feature coming soon"
             >
-              <BsMicrosoftTeams className="w-5 h-5 text-blue-500" />
-              <span>Sign up with Microsoft</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 cursor-not-allowed opacity-50"
+                disabled
+              >
+                <BsMicrosoftTeams className="w-5 h-5 text-blue-500" />
+                <span>Sign up with Microsoft</span>
+              </Button>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                  Feature coming soon
+                </span>
+              </div>
+            </div>
+
+            {/* Apple Button */}
+            <div
+              className="relative group"
+              title="Feature coming soon"
             >
-              <FaApple className="w-5 h-5 text-gray-900" />
-              <span>Sign up with Apple</span>
-            </Button>
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 cursor-not-allowed opacity-50"
+                disabled
+              >
+                <FaApple className="w-5 h-5 text-gray-900" />
+                <span>Sign up with Apple</span>
+              </Button>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                  Feature coming soon
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Divider */}
@@ -120,7 +201,7 @@ const Signup = () => {
                     className="pl-10"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    // required
+                    required
                   />
                 </div>
               </div>
@@ -135,7 +216,7 @@ const Signup = () => {
                     className="pl-10"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    // required
+                    required
                   />
                 </div>
               </div>
@@ -240,9 +321,33 @@ const Signup = () => {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
             >
-              Sign Up
+              {isLoading ? (
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : (
+                'Sign Up'
+              )}
             </Button>
           </form>
 

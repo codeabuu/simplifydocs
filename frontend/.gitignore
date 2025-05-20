@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+package-lock.json
+dist
+node_modules
+bun.lockb
+.env
+.env.*
+vite-env.d.ts
+
+
+

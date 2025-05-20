@@ -19,13 +19,15 @@ export const PdfControls = ({
   isProcessing,
 }: PdfControlsProps) => {
   const [customPrompt, setCustomPrompt] = useState("");
+  const [activeButton, setActiveButton] = useState<string | null>(null);
 
   const handleSummaryType = (type: string) => {
     if (!fileId) {
       toast.error('Please upload a PDF first');
       return;
     }
-    onSummaryType(type); // Delegate to parent component
+    setActiveButton(type);
+    onSummaryType(type);
   };
 
   const handleCustomPrompt = () => {
@@ -37,8 +39,9 @@ export const PdfControls = ({
       toast.error('Please enter a custom prompt');
       return;
     }
-    onCustomPrompt(customPrompt); // Delegate to parent component
-    setCustomPrompt(""); // Clear the input field
+    setActiveButton('custom');
+    onCustomPrompt(customPrompt);
+    setCustomPrompt("");
   };
 
   return (
@@ -46,30 +49,33 @@ export const PdfControls = ({
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-2">
           <Button 
-            onClick={() => handleSummaryType("simple_summary")} // General Summary
+            onClick={() => handleSummaryType("simple_summary")}
             disabled={isProcessing}
-            variant="secondary"
+            variant={activeButton === "simple_summary" ? "default" : "secondary"}
           >
             General Summary
           </Button>
           <Button 
-            onClick={() => handleSummaryType("beginners")} // Beginner Summary
+            onClick={() => handleSummaryType("beginners")}
             disabled={isProcessing}
-            variant="secondary"
+            variant={activeButton === "beginners" ? "default" : "secondary"}
           >
             Beginner Summary
           </Button>
           <Button 
-            onClick={() => handleSummaryType("technical")} // Technical Summary
+            onClick={() => handleSummaryType("technical")}
             disabled={isProcessing}
-            variant="secondary"
+            variant={activeButton === "technical" ? "default" : "secondary"}
           >
             Technical Summary
           </Button>
           <Button 
-            onClick={onDownload}
+            onClick={() => {
+              setActiveButton('download');
+              onDownload();
+            }}
             disabled={isProcessing}
-            variant="outline"
+            variant={activeButton === "download" ? "default" : "outline"}
           >
             Download PDF
           </Button>
@@ -87,6 +93,7 @@ export const PdfControls = ({
             <Button 
               onClick={handleCustomPrompt}
               disabled={isProcessing || !customPrompt.trim()}
+              variant={"default"}
             >
               Process
             </Button>

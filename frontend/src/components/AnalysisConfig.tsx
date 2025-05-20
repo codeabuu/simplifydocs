@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { analyzeData, generateCharts } from '@/lib/api'; // Adjust the import path as needed
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from 'sonner';
 
 interface AnalysisConfigProps {
-  fileId: string; // Add fileId prop
+  fileId: string;
   sampleSize: number;
   onSampleSizeChange: (size: number) => void;
-  onAnalyze: (result: any) => void; // Update to pass analysis result
-  onGenerate: (charts: any) => void; // Update to pass generated charts
+  onAnalyze: () => Promise<void>;
+  onGenerate: () => Promise<void>;
   isAnalyzing: boolean;
   isGenerating: boolean;
 }
@@ -20,29 +22,10 @@ export const AnalysisConfig = ({
   onAnalyze,
   onGenerate,
   isAnalyzing,
-  isGenerating
+  isGenerating,
 }: AnalysisConfigProps) => {
+  const [activeButton, setActiveButton] = useState<'analyze' | 'generate'>('analyze');
   
-  const handleAnalyze = async () => {
-    try {
-      // Analysis doesn't use sampleSize
-      const result = await analyzeData(fileId);
-      onAnalyze(result);
-    } catch (error) {
-      console.error('Error analyzing data:', error);
-    }
-  };
-
-  const handleGenerate = async () => {
-    try {
-      // Only generate charts using the sampleSize
-      const charts = await generateCharts(fileId, sampleSize);
-      onGenerate(charts);
-    } catch (error) {
-      console.error('Error generating charts:', error);
-    }
-  };
-
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
       <div className="space-y-2">
@@ -56,7 +39,7 @@ export const AnalysisConfig = ({
         />
       </div>
       
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="text-sm font-medium">Chart Type</label>
         <Select defaultValue="bar">
           <SelectTrigger>
@@ -69,23 +52,40 @@ export const AnalysisConfig = ({
             <SelectItem value="scatter">Scatter Plot</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
 
       <div className="flex gap-4">
         <Button 
-          onClick={handleAnalyze} 
+          onClick={async () => {
+            setActiveButton('analyze');
+            await onAnalyze();
+          }}
           className="flex-1"
           disabled={isAnalyzing}
+          variant={activeButton === 'analyze' ? 'default' : 'secondary'}
         >
-          {isAnalyzing ? "Analyzing..." : "Analyze"}
+          {isAnalyzing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Analyzing...
+            </>
+          ) : "Analyze Data"}
         </Button>
         <Button 
-          onClick={handleGenerate}
+          onClick={async () => {
+            setActiveButton('generate');
+            await onGenerate();
+          }}
           className="flex-1"
-          variant="secondary"
           disabled={isGenerating}
+          variant={activeButton === 'generate' ? 'default' : 'secondary'}
         >
-          {isGenerating ? "Generating..." : "Generate Charts"}
+          {isGenerating ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating...
+            </>
+          ) : "Generate Charts"}
         </Button>
       </div>
     </div>

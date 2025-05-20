@@ -1,0 +1,49 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const SubscriptionCheck = ({ children }) => {
+    const [hasSubscription, setHasSubscription] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkSubscription = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/check-subscription-status/', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+                setHasSubscription(response.data.has_active_subscription);
+            } catch (error) {
+                console.error('Error checking subscription:', error);
+                // Handle error - maybe redirect to login or show error message
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkSubscription();
+    }, []);
+
+    if (isLoading) {
+        return <div>Loading subscription status...</div>;
+    }
+
+    if (!hasSubscription) {
+        return (
+            <div className="subscription-required">
+                <h2>Premium Content Locked</h2>
+                <p>You need an active subscription to access this content.</p>
+                <button onClick={() => navigate('/pricing')} className="subscribe-button">
+                    Subscribe Now
+                </button>
+            </div>
+        );
+    }
+
+    return children;
+};
+
+export default SubscriptionCheck;
