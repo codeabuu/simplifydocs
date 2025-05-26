@@ -29,7 +29,7 @@ export const AnalysisConfig = ({
   return (
     <div className="space-y-6 p-6 bg-white rounded-lg shadow-sm">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Sample Size</label>
+        <label className="text-sm font-medium">Enter Sample Chart Size</label>
         <Input
           type="number"
           value={sampleSize}

@@ -249,7 +249,7 @@ const Dashboard = () => {
   
       <div className="bg-white shadow-sm relative z-50">
         <div className="container flex justify-between items-center py-4">
-          <h1 className="text-3xl font-bold">Document Analysis Tool</h1>
+          <h1 className="text-3xl font-bold">AskAnalytIQ: AI That Reads Between the Lines</h1>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -327,7 +327,7 @@ const Dashboard = () => {
             <Lock className="h-12 w-12 mx-auto text-primary mb-4" />
             <h2 className="text-2xl font-bold mb-2">Premium Features Locked</h2>
             <p className="text-gray-600 mb-6">
-              You need an active subscription to access the Document Analysis Tool.
+              You need an active subscription to access AskAnalytIQ AI Tool.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate('/pricing')} className="w-full">

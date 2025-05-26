@@ -9,10 +9,10 @@ const Footer = () => {
           <div>
             <div className="flex items-center space-x-2 mb-6">
               <FileSpreadsheet className="w-8 h-8 text-primary-400" />
-              <span className="text-2xl font-bold">Lovable.ai</span>
+              <span className="text-2xl font-bold">AskAnalytIQ</span>
             </div>
             <p className="text-gray-400 text-lg">
-              Making data interaction simple and powerful with AI.
+              Making data interaction simple, smarter and powerful with AI.
             </p>
           </div>
           <div>
@@ -50,7 +50,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p className="text-gray-400">© 2024 Lovable.ai. All rights reserved.</p>
+          <p className="text-gray-400">© 2025 AskAnalytIQ.io. All rights reserved.</p>
         </div>
       </div>
     </footer>

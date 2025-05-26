@@ -82,7 +82,7 @@ export const PdfControls = ({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Custom Prompt</label>
+          <label className="text-sm font-medium">Custom Summary</label>
           <div className="flex gap-2">
             <Input
               value={customPrompt}
