@@ -10,26 +10,44 @@ function Pricing() {
   const location = useLocation();
   const isLoggedIn = new URLSearchParams(location.search).get('loggedIn') === 'true';
 
-  // Fetch pricing data from the backend
   useEffect(() => {
     fetchSubscriptionPrices()
       .then(data => {
-        const transformedData = data.map(tier => ({
-          id: tier.id,
-          name: tier.name,
-          description: tier.description || "Best option for personal use & for your next project.",
-          price: tier.price,
-          period: tier.interval === "month" ? "per month" : "per year",
-          features: [
-            "Individual configuration",
-            "No setup, or hidden fees",
-            `Team size: ${tier.interval === "month" ? "1 developer" : "10 developers"}`,
-            `Premium support: ${tier.interval === "month" ? "6 months" : "24 months"}`,
-            `Free updates: ${tier.interval === "month" ? "6 months" : "24 months"}`,
-          ],
-          cta: tier.interval === "month" ? "Get Monthly" : "Get Yearly",
-          highlighted: tier.interval === "month",
-        }));
+        const transformedData = data.map(tier => {
+          const isYearly = tier.interval === "year";
+          const baseFeatures = [
+            <span key="analysis"><strong>Unlimited</strong> spreadsheet & PDF analysis</span>,
+            <span key="charts"><strong>Advanced</strong> chart generation (70+ chart types)</span>,
+            <span key="updates"><strong>Early access</strong> to new features</span>
+          ];
+
+          return {
+            id: tier.id,
+            name: isYearly ? "Yearly Plan" : "Monthly Plan",
+            description: isYearly 
+              ? "Best for professionals & power users (Save 16% vs monthly)"
+              : "Best for trying out the platform",
+            price: tier.price,
+            period: isYearly ? "per year" : "per month",
+            features: isYearly
+              ? [
+                  ...baseFeatures,
+                  <span key="priority"><strong>Priority</strong> AI processing</span>,
+                  // <span key="team"><strong>Team</strong> collaboration (up to 5 members)</span>,
+                  <span key="support"><strong>Dedicated</strong> 24/7 support</span>,
+                  // <span key="history"><strong>Extended</strong> chat history (12 months)</span>
+                ]
+              : [
+                  ...baseFeatures,
+                  <span key="standard"><strong>Standard</strong> AI processing</span>,
+                  // <span key="limit"><strong>100</strong> analyses/month</span>,
+                  // <span key="history"><strong>30-day</strong> chat history</span>
+                ],
+            cta: isYearly ? "Get Yearly" : "Get Monthly",
+            highlighted: isYearly, // Now highlighting yearly plan
+            isYearly
+          };
+        });
         setPricingTiers(transformedData);
       })
       .catch(error => console.error('Error fetching pricing data:', error));
@@ -48,7 +66,7 @@ function Pricing() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* X Button to Return to Dashboard (Only If Logged In) */}
+      {/* Close Button */}
       {isLoggedIn && (
         <button
           className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full shadow-md hover:bg-gray-200 transition"
@@ -73,42 +91,56 @@ function Pricing() {
       {/* Pricing Grid */}
       <div className="py-24 -mt-24">
         <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {pricingTiers.map((tier, index) => (
               <div
-                key={index}
-                className={`p-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 ${
+                key={tier.id}
+                className={`p-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 ${
                   tier.highlighted
-                    ? 'gradient-bg text-white shadow-xl scale-105'
-                    : 'bg-white text-gray-900 shadow-lg hover:shadow-xl'
+                    ? 'gradient-bg text-white shadow-xl border-primary-500 scale-[1.02]'
+                    : 'bg-white text-gray-900 shadow-lg hover:shadow-xl border-gray-200'
                 }`}
               >
+                {tier.highlighted && (
+                  <div className="absolute top-0 right-0 bg-primary-500 text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
+                    MOST POPULAR
+                  </div>
+                )}
+                
                 <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
                 <p className={tier.highlighted ? 'text-white/90' : 'text-gray-600'}>
                   {tier.description}
                 </p>
-                <div className="my-8">
+                
+                <div className="my-6">
                   <span className="text-5xl font-bold">${tier.price}</span>
                   <span className={tier.highlighted ? 'text-white/90' : 'text-gray-600'}>
                     /{tier.period}
                   </span>
+                  {tier.isYearly && (
+                    <div className="text-sm mt-1 text-primary-200">
+                      ≈ ${Math.round(tier.price / 12 * 100) / 100}/month
+                    </div>
+                  )}
                 </div>
-                <ul className="space-y-4 mb-8">
+                
+                <ul className="space-y-3 mb-8">
                   {tier.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <CheckCircle2 className={`w-5 h-5 mr-2 ${
+                    <li key={`${tier.id}-${featureIndex}`} className="flex items-start">
+                      <CheckCircle2 className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
                         tier.highlighted ? 'text-white' : 'text-primary-500'
                       }`} />
                       <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
+                
                 <button
                   onClick={() => handleCheckout(tier.id)}
                   disabled={loadingTier === tier.id}
-                  className={`w-full py-4 rounded-lg transition-all duration-300 flex items-center justify-center ${
+                  className={`w-full py-3 rounded-lg transition-all duration-300 flex items-center justify-center font-medium ${
                     tier.highlighted
-                      ? 'bg-white text-primary-500 hover:bg-primary-50'
+                      ? 'bg-white text-primary-600 hover:bg-primary-50'
                       : 'gradient-bg text-white hover:opacity-90'
                   }`}
                 >
@@ -131,6 +163,10 @@ function Pricing() {
                 </button>
               </div>
             ))}
+          </div>
+          
+          <div className="mt-12 text-center text-gray-500">
+            <p>Need more? <button className="text-primary-500 hover:underline" onClick={() => navigate('/contact')}>Contact us</button> for enterprise solutions</p>
           </div>
         </div>
       </div>
