@@ -96,25 +96,21 @@ const Navbar = () => {
                 ></span>
               </a>
 
-              <a
-                href="/pricing"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLinkClick("/pricing");
-                }}
-                className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 ${
-                  isActive("/pricing")
-                    ? "text-blue-600"
-                    : "text-gray-700 hover:text-blue-600"
-                } group`}
-              >
-                Pricing
-                <span
-                  className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${
-                    isActive("/pricing") ? "w-full" : "w-0 group-hover:w-full"
-                  }`}
-                ></span>
-              </a>
+              <Link
+  to="/pricing"
+  className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 ${
+    isActive("/pricing")
+      ? "text-blue-600"
+      : "text-gray-700 hover:text-blue-600"
+  } group`}
+>
+  Pricing
+  <span
+    className={`absolute bottom-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ${
+      isActive("/pricing") ? "w-full" : "w-0 group-hover:w-full"
+    }`}
+  />
+</Link>
 
               <a
                 href="/#about"
