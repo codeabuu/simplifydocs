@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
-import PricingPage from "./pages/Pricing";
+import Pricing from "./pages/Pricing";
 import Layout from "./components/Layout";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import CheckEmail from "./pages/CheckEmail";
@@ -39,8 +39,8 @@ const App = () => (
           <Route path="/checkout/start" element={<CheckoutStart />} />
           <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/" element={<Index />} />
-          <Route path="/pricing" element= {<Layout><PricingPage /></Layout>}/>
-          <Route path="/pricinglog" element= {<PricingPage />}/>
+          <Route path="/pricing" element= {<Layout><Pricing/></Layout>}/>
+          {/* <Route path="/pricinglog" element= {<PricingPage />}/> */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/confirm-email/:key" element={<ConfirmEmail />} />
