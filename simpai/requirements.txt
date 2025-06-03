@@ -2,13 +2,13 @@ asgiref==3.8.1
 dj-database-url==2.3.0
 dj-rest-auth==7.0.1
 Django==5.1.4
-django-allauth
+django-allauth==0.65.9
 djangorestframework==3.15.2
 django-extensions==3.2.3
 django-cors-headers==4.3.1
 gTTS==2.5.4
 matplotlib==3.10.3
-numpy==2.0.0
+numpy>=2.0.0
 openai==1.84.0
 openpyxl==3.1.5
 pandas==2.2.3
@@ -21,7 +21,6 @@ reportlab==4.2.5
 requests==2.32.3
 seaborn==0.13.2
 stripe==11.5.0
-django-redis
-django-widget-tweaks
-allauth-ui
-redis
+django-redis==5.4.0
+django-widget-tweaks==1.5.0
+redis==5.0.1

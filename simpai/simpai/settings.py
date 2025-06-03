@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'gpt',
-    "allauth_ui",
     'allauth',
     'allauth.account',
     "allauth.socialaccount",
