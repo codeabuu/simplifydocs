@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from django.conf.urls.static import static
+# from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from summarisation.views import FileUploadView, AskQuestionsView as pdprompt, SummarizeView, GPTChatView
 from spreadsheet.views import SpreadsheetUploadView, AnalyzeDataView, GenerateChartView
@@ -81,7 +81,8 @@ urlpatterns = [
     path('summarisation/ask/', pdprompt.as_view(), name='ask-question'),
     path('summarisation/upload/', FileUploadView.as_view(), name='file-upload'),
     path('summarisation/summarize/', SummarizeView.as_view(), name='summarize'),
-    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    ] 
+# + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# if settings.DEBUG:
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

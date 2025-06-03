@@ -6,8 +6,8 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # settings.py
-FRONTEND_URL = "https://simplifydocs.vercel.app/"
-LOGIN_URL = "https://simplifydocs.vercel.app/login"
+FRONTEND_URL = "https://simplifydocs.vercel.app/", "http://localhost:8080/"
+LOGIN_URL = "https://simplifydocs.vercel.app/login/", "http://localhost:8080/login/"
 PASSWORD_RESET_TIMEOUT = 604800
 
 
@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # 'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
     #'django_rest_auth',
@@ -70,7 +70,6 @@ INSTALLED_APPS = [
     # 'allauth.socialaccount.providers.microsoft',
     # 'allauth.socialaccount.providers.apple',
     "widget_tweaks",
-    "slippers",
     "commando",
     "profiles",
     'helpers',
@@ -99,7 +98,8 @@ REST_AUTH = {
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://simplifydocs.vercel.app/",
+    "https://simplifydocs.vercel.app",
+    "http://localhost:8080",
   # Allow requests from your frontend
 ]
 
@@ -133,7 +133,7 @@ CACHES = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
+    # "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -252,26 +252,24 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
+# STATIC_URL = None
 
 #STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_BASE_DIR = BASE_DIR / "staticfiles"
-STATICFILES_VENDOR_DIR = STATICFILES_BASE_DIR / "vendors"
+# STATICFILES_BASE_DIR = BASE_DIR / "staticfiles"
+# STATICFILES_VENDOR_DIR = STATICFILES_BASE_DIR / "vendors"
 
-STATICFILES_DIRS = [
-    STATICFILES_BASE_DIR
-]
+# STATICFILES_DIRS = []
 
-STATIC_ROOT = BASE_DIR / "local-cdn"
+# STATIC_ROOT = None
 
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# STORAGES = {
+#     "default": {
+#         "BACKEND": "django.core.files.storage.FileSystemStorage",
+#     },
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
 # if not DEBUG:
 #     STATIC_ROOT = BASE_DIR / "prod-cdn"
 # Default primary key field type
