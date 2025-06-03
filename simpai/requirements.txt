@@ -21,7 +21,7 @@ reportlab==4.2.5
 requests==2.32.3
 seaborn==0.13.2
 stripe==11.5.0
-django-redis==5.4.0
-django-widget-tweaks==1.5.0
-allauth-ui==0.1.0
-redis==5.0.1
+django-redis
+django-widget-tweaks
+allauth-ui
+redis
