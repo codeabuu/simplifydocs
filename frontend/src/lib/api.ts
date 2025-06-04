@@ -241,14 +241,45 @@ export const summarizePdf = async (fileId: string, promptKey: string, options?: 
 //gpt3 apis
 export const askGPT = async (question: string) => {
   const token = localStorage.getItem('authToken');
-  const response = await axios.post(`${API_BASE_URL}/gpt/ask/`, {
-    question,
-  },  {
-    headers: {
-        'Authorization': `Token ${token}`,
+  if (!token) {
+    throw new Error("Authentication token not found");
+  }
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/gpt/ask/`, 
+      { question },
+      {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        transformResponse: [data => {
+          try {
+            // Handle potential SSE-style "data: " prefix
+            if (typeof data === 'string' && data.startsWith('data: ')) {
+              return JSON.parse(data.substring(6));
+            }
+            return JSON.parse(data);
+          } catch (e) {
+            console.error("Failed to parse response:", data);
+            throw new Error(`Invalid JSON response: ${data}`);
+          }
+        }]
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("API Error:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw new Error(error.response?.data?.message || "API request failed");
     }
-    });
-  return response.data;
+    throw error;
+  }
 };
 
 //authentication
