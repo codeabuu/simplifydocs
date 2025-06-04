@@ -48,7 +48,7 @@ const Login = () => {
       <div className="w-full max-w-xl relative">
         {/* Top-right "Create an account" link */}
         <div className="absolute top-0 -right-20">
-          <span className="text-gray-600">New to SimpAI? </span>
+          <span className="text-gray-600">New to AskAnalytIQ? </span>
           <Link to="/signup" className="text-primary hover:underline font-medium">
             Create an account
           </Link>
@@ -63,7 +63,7 @@ const Login = () => {
         <div className="glass p-10 rounded-2xl">
           <div className="text-center mb-8">
             <img src="/homelogo-preview.png" alt="SimpAI Logo" className="w-20 h-20 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900">Sign in to SimpAI</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Sign in to AskAnalytIQ</h1>
             <p className="text-gray-600 mt-2">Please sign in to your account</p>
           </div>
 
