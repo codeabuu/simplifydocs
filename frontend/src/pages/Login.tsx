@@ -88,7 +88,7 @@ const Login = () => {
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
-                  Feature coming soon
+                   under maintenance
                 </span>
               </div>
             </div>
@@ -108,7 +108,7 @@ const Login = () => {
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
-                  Feature coming soon
+                  under maintenance
                 </span>
               </div>
             </div>
@@ -128,7 +128,7 @@ const Login = () => {
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
-                  Feature coming soon
+                  under maintenance
                 </span>
               </div>
             </div>
