@@ -14,7 +14,7 @@ from checkouts import views as checkout_views
 from landing import views as landing_views
 #from allauth.account.views import confirm_email as allauthemailconf
 from profiles.views import confirm_email, resend_confirmation_email
-from dj_rest_auth.views import PasswordResetView
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from profiles.views import PasswordResetRequestView, PasswordResetConfirmView
 from django.views.decorators.csrf import csrf_exempt
