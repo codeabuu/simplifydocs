@@ -91,8 +91,8 @@ REST_AUTH = {
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
     'REGISTER_SERIALIZER': 'profiles.serializers.CustomRegisterSerializer',
-    'EMAIL_CONFIRMATION_URL': 'http://localhost:8080/confirm-email/{key}',
-    'PASSWORD_RESET_CONFIRM': 'http://localhost:8080/reset-password-confirm/{uid}/{token}/',
+    'EMAIL_CONFIRMATION_URL': 'https://simplifydocs.vercel.app/confirm-email/{key}',
+    'PASSWORD_RESET_CONFIRM': 'https://simplifydocs.vercel.app/reset-password-confirm/{uid}/{token}/',
 }
 
 CORS_ALLOW_CREDENTIALS = True

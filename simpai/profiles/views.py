@@ -208,7 +208,7 @@ from allauth.account.adapter import DefaultAccountAdapter
 class CustomAccountAdapter(DefaultAccountAdapter):
     def get_email_confirmation_url(self, request, emailconfirmation):
         # Construct the frontend URL for email confirmation
-        frontend_url = "http://localhost:8080/confirm-email/"  # Your frontend URL
+        frontend_url = "https://simplifydocs.vercel.app/confirm-email/"  # Your frontend URL
         key = emailconfirmation.key
         return f"{frontend_url}{key}/"
 
@@ -233,7 +233,7 @@ class PasswordResetRequestView(APIView):
 
         token = default_token_generator.make_token(profile)
 
-        reset_link = f"http://localhost:8080/reset-password-confirm/{uidb64}/{token}/"
+        reset_link = f"https://simplifydocs.vercel.app/reset-password-confirm/{uidb64}/{token}/"
         print(f"Reset Link: {reset_link}")  # Debugging
 
         # Send email

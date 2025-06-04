@@ -48,7 +48,7 @@ def checkout_redirect_view(request):
         obj = None
     
     if checkout_subscription_price_id is None:
-        return redirect("http://localhost:8080/pricing")
+        return redirect("https://simplifydocs.vercel.app/pricing")
 
     customer_stripe_id = request.user.customer.stripe_id
     success_url_path = reverse("stripe-checkout-end")
@@ -125,6 +125,6 @@ def checkout_finalize_view(request):
         # return redirect(_user_sub_obj.get_absolute_url())
     
     subscription_type = "monthly" if sub_obj.interval == "month" else "yearly"
-    redirect_url = f"http://localhost:8080/subscription-success?type={subscription_type}"
+    redirect_url = f"https://simplifydocs.vercel.app/subscription-success?type={subscription_type}"
     
     return HttpResponseRedirect(redirect_url)
