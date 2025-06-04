@@ -105,10 +105,10 @@ const Signup = () => {
 
         <div className="glass p-10 rounded-2xl">
           <div className="text-center mb-8">
-            <img
-              src="/logo.png" // Replace with your logo path
-              alt="SimpAI Logo"
-              className="w-20 h-20 mx-auto mb-4" // Increased logo size
+              <img
+              src="/homelogo-preview.png"
+              alt="AskAnalytIQ Logo"
+              className="mx-auto mb-4 h-auto w-52" // try w-52 or w-60
             />
             <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1> {/* Increased font size */}
             <p className="text-gray-600 mt-2">
@@ -132,9 +132,9 @@ const Signup = () => {
                 <span>Sign up with Google</span>
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                {/* <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
                   Feature coming soon
-                </span>
+                </span> */}
               </div>
             </div>
 
@@ -152,9 +152,9 @@ const Signup = () => {
                 <span>Sign up with Microsoft</span>
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                {/* <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
                   Feature coming soon
-                </span>
+                </span> */}
               </div>
             </div>
 
@@ -172,9 +172,9 @@ const Signup = () => {
                 <span>Sign up with Apple</span>
               </Button>
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
+                {/* <span className="bg-gray-800 text-white text-sm px-2 py-1 rounded">
                   Feature coming soon
-                </span>
+                </span> */}
               </div>
             </div>
           </div>
