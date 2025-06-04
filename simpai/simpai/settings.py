@@ -6,8 +6,8 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # settings.py
-FRONTEND_URL = "https://simplifydocs.vercel.app/", "http://localhost:8080/"
-LOGIN_URL = "https://simplifydocs.vercel.app/login/", "http://localhost:8080/login/"
+FRONTEND_URL = "https://simplifydocs.vercel.app/"
+LOGIN_URL = "https://simplifydocs.vercel.app/login/"
 PASSWORD_RESET_TIMEOUT = 604800
 
 
@@ -98,7 +98,6 @@ REST_AUTH = {
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://simplifydocs.vercel.app",
-    "http://localhost:8080",
   # Allow requests from your frontend
 ]
 
