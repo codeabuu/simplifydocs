@@ -26,7 +26,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/password-reset/reset/${token}/`,
+        `https://askanalytiq.onrender.com/api/password-reset/reset/${token}/`,
         { new_password: newPassword }
       );
       setMessage('Password reset successfully.');

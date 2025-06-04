@@ -19,7 +19,7 @@ const ConfirmEmail = () => {
       try {
         // Send the key to the backend for verification
         const response = await axios.post(
-          "http://127.0.0.1:8000/api/confirm-email/",
+          "https://askanalytiq.onrender.com/api/confirm-email/",
           { key },
         );
 

@@ -13,7 +13,7 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/password-reset/request/', { email });
+      const response = await axios.post('https://askanalytiq.onrender.com/api/password-reset/request/', { email });
       setMessage('Password reset email sent. Check your inbox.');
     } catch (error) {
       setMessage('Error sending password reset email. Please check your entries and try again.');

@@ -3,7 +3,7 @@ import path from 'path';
 import { blob } from 'stream/consumers';
 // import { Navigate, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = 'http://127.0.0.1:8000/';
+const API_BASE_URL = 'https://askanalytiq.onrender.com/';
 
 export const uploadSpreadsheet = async (
   file: File,
