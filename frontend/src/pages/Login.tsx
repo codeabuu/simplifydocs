@@ -62,7 +62,7 @@ const Login = () => {
 
         <div className="glass p-10 rounded-2xl">
           <div className="text-center mb-8">
-            <img src="/logo.png" alt="SimpAI Logo" className="w-20 h-20 mx-auto mb-4" />
+            <img src="/homelogo-preview.png" alt="SimpAI Logo" className="w-20 h-20 mx-auto mb-4" />
             <h1 className="text-3xl font-bold text-gray-900">Sign in to SimpAI</h1>
             <p className="text-gray-600 mt-2">Please sign in to your account</p>
           </div>
