@@ -113,18 +113,18 @@ CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 
 CORS_ALLOW_CREDENTIALS = True
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # Same as non-Docker setup
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "MAX_ENTRIES": 1000,
-            "CULL_FREQUENCY": 3,
-        },
-        "KEY_PREFIX": "spreadsheet_app"
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",  # Same as non-Docker setup
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#             "MAX_ENTRIES": 1000,
+#             "CULL_FREQUENCY": 3,
+#         },
+#         "KEY_PREFIX": "spreadsheet_app"
+#     }
+# }
 
 
 MIDDLEWARE = [
