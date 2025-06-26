@@ -15,7 +15,8 @@ const SubscriptionCheck = ({ children }) => {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                     }
                 });
-                setHasSubscription(response.data.has_active_subscription);
+                setHasSubscription(response.data.is_subscribed);
+                
             } catch (error) {
                 console.error('Error checking subscription:', error);
                 // Handle error - maybe redirect to login or show error message

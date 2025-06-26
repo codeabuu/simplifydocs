@@ -260,7 +260,7 @@ const Dashboard = () => {
           'Content-Type': 'application/json'
         }
       });
-      setHasSubscription(response.data.has_active_subscription);
+      setHasSubscription(response.data.is_subscribed);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         localStorage.removeItem('authToken');
