@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Customer',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('stripe_id', models.CharField(blank=True, max_length=120, null=True)),
+                ('paystack_id', models.CharField(blank=True, max_length=120, null=True)),
                 ('init_email', models.EmailField(blank=True, max_length=254, null=True)),
                 ('init_email_confirmed', models.BooleanField(default=False)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),

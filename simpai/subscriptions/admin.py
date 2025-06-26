@@ -5,7 +5,7 @@ from .models import *
 
 class SubscriptionPrice(admin.StackedInline):
     model = SubscriptionPrice
-    readonly_fields = ['stripe_id', 'price']
+    readonly_fields = ['paystack_id', 'price']
     can_delete = False
     extra = 0
 

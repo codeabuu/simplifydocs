@@ -23,6 +23,7 @@ from profiles.views import request_password_reset, verify_reset_token, reset_pas
 from spreadsheet.views import AskQuestionView
 from customers.views import UserProfileView
 from subscriptions.views import check_subscription_status
+from helpers.views import paystack_webhook
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -42,6 +43,8 @@ urlpatterns = [
     path('checkout/start/', checkout_views.checkout_redirect_view, name='stripe-checkout-start'),
     path('api/subscription-prices/', sub_views.subscription_price_view, name='subscription-prices'),
     path('api/checkout/finalize/', checkout_views.checkout_finalize_view, name='checkout-finalize'),
+
+    path('paystack/webhook/', paystack_webhook, name='paystack-webhook'),
 
     path('api/check-subscription-status/', check_subscription_status, name='check-sub-status'),
 
