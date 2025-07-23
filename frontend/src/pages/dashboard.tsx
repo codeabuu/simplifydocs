@@ -6,13 +6,16 @@ import { SpreadsheetAnalysis } from '@/components/spreadsheetMain';
 import { PdfProcessing } from '@/components/pdfMain';
 import { GeneralChatInterface } from '@/components/generalChat';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { createPortal } from 'react-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 import { useLayoutEffect } from 'react';
+import { checkSubscriptionStatus } from '@/lib/api';
+import { X } from 'lucide-react'; 
+
 
 // IndexedDB Utility Class
 class IndexedDB {
@@ -173,6 +176,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(true);
 
   // Load initial state from IndexedDB
   useEffect(() => {
@@ -242,9 +246,8 @@ const Dashboard = () => {
   }, [pdfState]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    checkSubscription();
-  }, [navigate]);
+  // Scroll to top immediately when component mounts
+  window.scrollTo({ top: 0, behavior: 'auto' });
 
   const checkSubscription = async () => {
     try {
@@ -254,13 +257,8 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.get('http://127.0.0.1:8000/api/check-subscription-status/', {
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      setHasSubscription(response.data.is_subscribed);
+      const response = await checkSubscriptionStatus();
+      setHasSubscription(response.isSubscribed);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         localStorage.removeItem('authToken');
@@ -269,8 +267,23 @@ const Dashboard = () => {
       setHasSubscription(false);
     } finally {
       setIsLoading(false);
+      // Scroll to top again after loading finishes
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      });
     }
   };
+
+  checkSubscription();
+}, [navigate]);
+
+// Add this to handle scroll restoration
+useEffect(() => {
+  // Prevent React Router from managing scroll position
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+}, []);
 
   // Spreadsheet handlers
   const handleSpreadsheetFileUpload = (file: File, fileId: string) => {
@@ -368,22 +381,23 @@ const Dashboard = () => {
   
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container flex justify-between items-center py-4">
-          <div className="flex items-center space-x-2">
-            <Brain className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              AskAnalytIQ
-            </h1>
-          </div>
+        <div className="container flex justify-between items-center py-3">
+          <Link to="/" className="flex items-center">
+            <img
+              src="/homelogo-preview.png"
+              alt="AskAnalytIQ Logo"
+              className="h-auto w-52" // Adjusted size for header
+            />
+          </Link>
           
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost" 
               className="flex items-center gap-2 text-blue-600 hover:bg-blue-50"
-              onClick={() => navigate('/help')}
+              onClick={() => navigate('/dashboard')}
             >
-              <HelpCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Help</span>
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden sm:inline text-sm">Help</span>
             </Button>
             
             <DropdownMenu>
@@ -418,10 +432,20 @@ const Dashboard = () => {
 
       <main className={`container py-8 ${!hasSubscription ? 'blur-sm brightness-75 pointer-events-none' : ''}`}>
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 mb-8 text-white shadow-lg">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        {showWelcomeBanner && (
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 mb-8 text-white shadow-lg relative">
+          {/* Close button */}
+          <button 
+            onClick={() => setShowWelcomeBanner(false)}
+            className="absolute top-3 right-3 p-1 rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Close welcome banner"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center pr-6">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Welcome back!</h2>
+              <h2 className="text-xl font-bold mb-2">Welcome back!</h2>
               <p className="opacity-90 max-w-2xl">
                 Get insights from your documents with our AI-powered analysis. 
                 Start by uploading a spreadsheet or PDF, or ask our assistant anything.
@@ -429,38 +453,39 @@ const Dashboard = () => {
             </div>
             <Button 
               variant="secondary" 
-              className="mt-4 md:mt-0 flex items-center gap-2"
+              className="mt-4 md:mt-0 flex items-center gap-2 text-sm"
               onClick={() => navigate('/tutorial')}
             >
-              <Rocket className="h-4 w-4" />
+              <Rocket className="h-3.5 w-3.5" />
               Quick Tour
             </Button>
           </div>
         </div>
+      )}
 
         {/* AI Chat Section */}
-        <Card className="mb-8 overflow-hidden">
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b flex items-center gap-3">
-            <Brain className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">AI Assistant</h2>
+        <Card className="mb-6 overflow-hidden w-full max-w-6xl mx-auto">
+          <div className="p-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border-b flex items-center gap-3">
+            <Brain className="h-5 w-5 text-blue-600" />
+            <h2 className="text-sm font-medium text-gray-800">AI Assistant</h2>
           </div>
-          <div className="p-4">
+          <div className="px-3 py-2">
             <GeneralChatInterface />
           </div>
         </Card>
 
         {/* Document Analysis Tabs */}
         <Tabs defaultValue="spreadsheet" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-0.5 rounded-md h-9">
             <TabsTrigger 
               value="spreadsheet" 
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-green-600 data-[state=active]:border-green-500 data-[state=active]:border-b-2 rounded-md flex items-center gap-2 transition-colors"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-green-600 data-[state=active]:border-green-500 data-[state=active]:border-b-2 rounded-md flex items-center gap-1.5 transition-colors"
             >
               <FileSpreadsheet className="h-4 w-4" />
               Spreadsheets
             </TabsTrigger>
             <TabsTrigger 
-              value="pdf" 
+              value="pdf"
               className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-red-600 data-[state=active]:border-red-500 data-[state=active]:border-b-2 rounded-md flex items-center gap-2 transition-colors"
             >
               <FileText className="h-4 w-4" />
@@ -469,26 +494,38 @@ const Dashboard = () => {
           </TabsList>
 
           <TabsContent value="spreadsheet">
-            <Card className="p-6 shadow-sm border-t-4 border-green-500">
-              <SpreadsheetAnalysis
-                state={spreadsheetState}
-                onStateChange={setSpreadsheetState}
-                onFileUpload={handleSpreadsheetFileUpload}
-                onReset={handleSpreadsheetReset}
-              />
-            </Card>
-          </TabsContent>
+  <Card className="mb-6 overflow-hidden w-full max-w-7xl mx-auto shadow-sm"> {/* Matched width and margin */}
+    <div className="p-3 py-2 bg-gradient-to-r from-green-50 to-blue-50 border-b border-green-500 flex items-center gap-3"> {/* Matching header style */}
+      <FileSpreadsheet className="h-5 w-5 text-green-600" /> {/* Matching icon size */}
+      <h2 className="text-sm font-medium text-gray-800">Spreadsheet Analysis</h2> {/* Matching text */}
+    </div>
+    <div className="px-3 py-2"> {/* Matching content padding */}
+      <SpreadsheetAnalysis
+        state={spreadsheetState}
+        onStateChange={setSpreadsheetState}
+        onFileUpload={handleSpreadsheetFileUpload}
+        onReset={handleSpreadsheetReset}
+      />
+    </div>
+  </Card>
+</TabsContent>
 
           <TabsContent value="pdf">
-            <Card className="p-6 shadow-sm border-t-4 border-red-500">
-              <PdfProcessing
-                state={pdfState}
-                onStateChange={setPdfState}
-                onFileUpload={handlePdfFileUpload}
-                onReset={handlePdfReset}
-              />
-            </Card>
-          </TabsContent>
+  <Card className="mb-6 overflow-hidden w-full max-w-7xl mx-auto shadow-sm">
+    <div className="p-3 py-2 bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-500 flex items-center gap-3">
+      <FileText className="h-5 w-5 text-red-600" />
+      <h2 className="text-sm font-medium text-gray-800">PDF Analysis</h2>
+    </div>
+    <div className="px-3 py-2">
+      <PdfProcessing
+        state={pdfState}
+        onStateChange={setPdfState}
+        onFileUpload={handlePdfFileUpload}
+        onReset={handlePdfReset}
+      />
+    </div>
+  </Card>
+</TabsContent>
         </Tabs>
       </main>
 
@@ -500,7 +537,7 @@ const Dashboard = () => {
             <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
               <Lock className="h-10 w-10 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-gray-800">Unlock Premium Features</h2>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Unlock Premium Features</h2>
             <p className="text-gray-600 mb-6">
               Upgrade your plan to access the full power of AskAnalytIQ AI tools and advanced document analysis.
             </p>
