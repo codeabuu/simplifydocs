@@ -65,21 +65,17 @@ const Contact = () => {
   return (
     <main className="pt-16">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700">
+      {/* <section className="relative py-20 overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700">
         <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0icmdiYSgyNTUsMjU1LDI11LDAuMDUpIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCBmaWxsPSJ1cmwoI3BhdHRlcm4pIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+')]"></div>
         
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="inline-flex items-center justify-center bg-blue-500/20 px-4 py-2 rounded-full mb-4">
-            <Brain className="h-5 w-5 mr-2 text-white" />
-            <span className="text-sm font-medium text-white/90">ASKANALYTIC SUPPORT</span>
-          </div>
-          <h1 className="text-4xl font-bold mb-4 text-white">AI-Powered Data Insights</h1>
+          <h1 className="text-4xl font-bold mb-4 text-white">ASKANALYTIC SUPPORT</h1>
           <p className="text-xl max-w-3xl mx-auto text-white/90">
-            Need help with your data? Our AI platform helps you uncover insights from your uploaded data.
+            Need our help?
             Contact us for personalized assistance.
           </p>
         </div>
-      </section>
+      </section> */}
       
       {/* Contact Sections */}
       <section className="py-16 bg-white">
@@ -125,9 +121,12 @@ const Contact = () => {
             {/* Contact Form */}
             <div className="lg:col-span-2">
               <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-                <h2 className="text-2xl font-semibold mb-6">Get AI Data Help</h2>
+                <div className="inline-flex items-center justify-center">
+            <Brain className="h-5 w-5 mr-2 text-black" />
+            <span className="text-lg font-medium text-black/90">ASKANALYTIQ SUPPORT</span>
+          </div>
                 <p className="text-gray-600 mb-6">
-                  Tell us about your data and what insights you're looking for. Our AI specialists will help you get the most from our platform.
+                  Tell us what you're looking for. Our AI specialists will help you get the most from our platform.
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -186,7 +185,7 @@ const Contact = () => {
                 </div>
                 
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
-                  {loading ? 'Connecting to AI specialists...' : 'Get AI Assistance'}
+                  {loading ? 'Connecting to AI specialists...' : 'Get our Assistance'}
                 </Button>
               </form>
             </div>
