@@ -78,10 +78,10 @@ class SubscriptionStatus(models.TextChoices):
 class SubscriptionPrice(models.Model):
     class IntervalChoices(models.TextChoices):
         MONTHLY = 'month', 'Monthly'
-        YEARLY = 'year', 'Yearly'
+        YEARLY = 'year', 'Annually'
 
     name = models.CharField(max_length=120, default='Subscription')
-    stripe_id = models.CharField(max_length=255, null=True, blank=True)
+    paystack_id = models.CharField(max_length=255, null=True, blank=True)
     interval = models.CharField(max_length=120, default=IntervalChoices.MONTHLY, choices=IntervalChoices.choices)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=19.99)
     #trial_period_days = models.IntegerField(default=7, help_text='Number of days for the free trial')
@@ -110,41 +110,44 @@ class SubscriptionPrice(models.Model):
         return int(self.price * 100)
 
     @property
-    def product_stripe_id(self):
-        if not self.stripe_id:
+    def product_paystack_id(self):
+        if not self.paystack_id:
             return None
-        return self.stripe_id
+        return self.paystack_id
     
     def save(self, *args, **kwargs):
-        if (self.interval == 'month') and self.price != 19.99:
-            self.price = 19.99
-        elif self.interval == 'year' and self.price != 199.99:
-            self.price = 199.99
-        is_new = self.pk is None
+    # First save to ensure we have an ID
         super().save(*args, **kwargs)
-
-        if is_new and not self.stripe_id:
-            # Create a Stripe product and price
-            product_id = helpers.billing.create_product(
-                name=f"{self.name} ({self.interval})",
-                metadata={"subscription_price_id": self.id},
-                raw=False
-            )
-            price_id = helpers.billing.create_price(
-                currency=self.stripe_currency,
-                unit_amount=self.stripe_price,
-                interval=self.interval,
-                product=product_id,
-                metadata={"subscription_price_id": self.id},
-            )
-            self.stripe_id = price_id
-            super().save(update_fields=["stripe_id"])
-
-        if self.featured:
-            SubscriptionPrice.objects.filter(
-                interval = self.interval
-            ).exclude(id=self.id).update(featured=False)
-
+        
+        if not self.paystack_id:
+            try:
+                from helpers.billing import PaystackService
+                import requests
+                
+                url = f"{PaystackService.BASE_URL}/plan"
+                headers = PaystackService._get_headers()
+                
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    json={
+                        "name": self.name,
+                        "amount": int(float(self.price) * 100),
+                        "interval": "monthly" if self.interval == "month" else "annually",
+                        "currency": "USD"  # Change to NGN if needed
+                    }
+                )
+                response.raise_for_status()
+                
+                plan_code = response.json()['data']['plan_code']
+                self.paystack_id = plan_code
+                # Use update to avoid recursive save
+                SubscriptionPrice.objects.filter(id=self.id).update(paystack_id=plan_code)
+                
+            except Exception as e:
+                print(f"CRITICAL ERROR CREATING PLAN: {str(e)}")
+                if hasattr(e, 'response'):
+                    print(f"API RESPONSE: {e.response.text}")
 
 class UserSubscriptionManager(models.Manager):
     def get_queryset(self):
@@ -153,7 +156,11 @@ class UserSubscriptionManager(models.Manager):
 class UserSubscription(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     subscription_price = models.ForeignKey(SubscriptionPrice, on_delete=models.SET_NULL, null=True, blank=True)
-    stripe_id = models.CharField(max_length=120, null=True, blank=True)
+    paystack_id = models.CharField(max_length=120, null=True, blank=True)
+    subscription_code = models.CharField(max_length=120, null=True, blank=True)  # This stores SUB_xxx
+    customer_code = models.CharField(max_length=120, null=True, blank=True)
+    last_payment_reference = models.CharField(max_length=100, blank=True, null=True) 
+    
     active = models.BooleanField(default=True)
     user_cancelled = models.BooleanField(default=False)
     original_period_start = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)

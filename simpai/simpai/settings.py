@@ -4,7 +4,7 @@ from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+# AUTH_USER_MODEL = "customers.CustomUser"
 # settings.py
 FRONTEND_URL = "https://simplifydocs.vercel.app/"
 LOGIN_URL = "https://simplifydocs.vercel.app/login/"
@@ -40,7 +40,7 @@ SECRET_KEY = 'django-insecure-klh^+(_78yw90o5rw%t_hkh7v%$#roox3dz)&3zqnmq2syc7w)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 BASE_URL = config("BASE_URL", default=None)
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "askanalytiq.onrender.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "fdacf99bd21f.ngrok-free.app"]
 
 
 # Application definition
@@ -128,7 +128,6 @@ CORS_ALLOW_CREDENTIALS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -140,7 +139,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'simpai.urls'
-
+APP_NAME = "simpai"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -163,12 +162,12 @@ WSGI_APPLICATION = 'simpai.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 DATABASE_URL = config("DATABASE_URL", default=None)
 

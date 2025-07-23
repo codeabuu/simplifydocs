@@ -35,6 +35,17 @@ const CheckEmail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light/20 via-white to-secondary/20 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+        {/* Added your logo here */}
+        <div className="flex justify-center mb-6">
+          <Link to="/" className="inline-flex items-center">
+            <img
+              src="/homelogo-preview.png"
+              alt="AskAnalytIQ Logo"
+              className="h-auto w-52"
+            />
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Check Your Email</h1>

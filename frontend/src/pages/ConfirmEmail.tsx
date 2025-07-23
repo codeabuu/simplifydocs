@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 
 const ConfirmEmail = () => {
@@ -45,7 +45,15 @@ const ConfirmEmail = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md w-full">
+        <Link to="/" className="inline-flex items-center">
+          <img
+            src="/homelogo-preview.png"
+            alt="AskAnalytIQ Logo"
+            className="h-auto w-52"
+          />
+        </Link>
+        
         {isLoading ? (
           <div className="flex flex-col items-center">
             <svg

@@ -67,11 +67,10 @@ const Login = () => {
               alt="AskAnalytIQ Logo"
               className="mx-auto mb-4 h-auto w-52" // try w-52 or w-60
             />
-            <h1 className="text-3xl font-bold text-gray-900">Sign in to AskAnalytIQ</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Sign in to SimpAI</h1>
             <p className="text-gray-600 mt-2">Please sign in to your account</p>
           </div>
 
-          {/* Social Login Buttons */}
           <div className="space-y-4 mb-6">
           {/* Maintenance Notice */}
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">

@@ -190,13 +190,13 @@ export const PdfChatInterface = ({ fileId, onSendMessage }: PdfChatInterfaceProp
 
       <div 
         ref={chatContainerRef}
-        className={`flex flex-col bg-white rounded-lg shadow-sm ${
+        className={`flex flex-col bg-white rounded-lg shadow-sm border-t-4 border-red-500 ${
           isExpanded 
             ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] max-w-[1200px] max-h-[800px] z-50'
             : 'h-[400px]'
         }`}
       >
-        <div className="p-4 border-b flex justify-between items-center">
+        <div className="p-4 border-b bg-gradient-to-r from-red-50 to-amber-50 flex justify-between items-center">
           <h3 className="font-medium">Chat with your PDF</h3>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleResetChat}>

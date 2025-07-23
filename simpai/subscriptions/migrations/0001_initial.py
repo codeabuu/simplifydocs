@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(default='Subscription', max_length=120)),
-                ('stripe_id', models.CharField(blank=True, max_length=255, null=True)),
+                ('paystack_id', models.CharField(blank=True, max_length=255, null=True)),
                 ('interval', models.CharField(choices=[('month', 'Monthly'), ('year', 'Yearly')], default='month', max_length=120)),
                 ('price', models.DecimalField(decimal_places=2, default=19.99, max_digits=10)),
                 ('order', models.IntegerField(default=-1, help_text='Order on pricing page')),
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             name='UserSubscription',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('stripe_id', models.CharField(blank=True, max_length=120, null=True)),
+                ('paystack_id', models.CharField(blank=True, max_length=120, null=True)),
                 ('active', models.BooleanField(default=True)),
                 ('user_cancelled', models.BooleanField(default=False)),
                 ('original_period_start', models.DateTimeField(blank=True, null=True)),

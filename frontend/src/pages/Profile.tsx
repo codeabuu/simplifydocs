@@ -1,44 +1,101 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ProfilePopup from "@/components/ProfilePopup";
-import Dashboard from "@/pages/dashboard"; // Import the Dashboard component
-import { fetchUserProfile } from "@/lib/api"; // Import the fetchUserProfile function
+import Dashboard from "@/pages/dashboard";
+import { fetchUserProfile } from "@/lib/api";
 
 interface UserData {
   firstName: string;
   email: string;
   plan: string;
-  expiryDate: string | null; // Use string or null for expiryDate
+  expiryDate: string | null;
+  lastUpdated?: number; // Add timestamp for cache control
 }
+
+const CACHE_KEY = "userProfileCache";
+const CACHE_DURATION = 14 * 24 * 60 * 60 * 1000; // 2 weeks in milliseconds
 
 const Profile = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(true);
   const [userData, setUserData] = useState<UserData>({
     firstName: "",
     email: "",
-    plan: "", // Default plan (empty string)
-    expiryDate: null, // Default to null
+    plan: "Trial",
+    expiryDate: null,
   });
   const navigate = useNavigate();
 
-  // Fetch user profile data from the backend
+  // Check if cached data is still valid
+  const isCacheValid = (cachedData: UserData): boolean => {
+    if (!cachedData.lastUpdated) return false;
+    
+    // Check if cache is expired (older than 2 weeks)
+    const isExpired = Date.now() - cachedData.lastUpdated > CACHE_DURATION;
+    
+    // Check if subscription/plan has changed (we'll compare with fresh data)
+    // This will be handled in the fetch logic
+    
+    return !isExpired;
+  };
+
+  // Fetch user profile data with caching logic
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
+        // Try to get cached data
+        const cachedDataString = localStorage.getItem(CACHE_KEY);
+        let cachedData: UserData | null = null;
+        
+        if (cachedDataString) {
+          cachedData = JSON.parse(cachedDataString);
+          
+          // If cache is valid, use it temporarily while we check for updates
+          if (cachedData && isCacheValid(cachedData)) {
+            setUserData(cachedData);
+          }
+        }
+
+        // Always fetch fresh data in the background
         const profileData = await fetchUserProfile();
-        setUserData({
+        const freshData: UserData = {
           firstName: profileData.first_name,
           email: profileData.email,
-          plan: profileData.plan || "Trial", // Use the plan from the backend or default to "Free"
-          expiryDate: profileData.current_period_end || null, // Use the current_period_end from the backend or default to null
-        });
+          plan: profileData.plan || "Trial",
+          expiryDate: profileData.current_period_end || null,
+          lastUpdated: Date.now(),
+        };
+
+        // Check if subscription/plan has changed
+        const subscriptionChanged = cachedData && 
+          (cachedData.plan !== freshData.plan || 
+           cachedData.expiryDate !== freshData.expiryDate);
+
+        // Update cache and UI if:
+        // 1. There's no cached data
+        // 2. Cache is expired
+        // 3. Subscription/plan has changed
+        if (!cachedData || !isCacheValid(cachedData) || subscriptionChanged) {
+          localStorage.setItem(CACHE_KEY, JSON.stringify(freshData));
+          setUserData(freshData);
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
+        // If fetch fails but we have cached data, use it
+        const cachedDataString = localStorage.getItem(CACHE_KEY);
+        if (cachedDataString) {
+          const cachedData = JSON.parse(cachedDataString);
+          setUserData(cachedData);
+        }
       }
     };
 
     fetchProfileData();
   }, []);
+
+  // Clear cache when subscription changes (call this after plan changes)
+  const clearProfileCache = () => {
+    localStorage.removeItem(CACHE_KEY);
+  };
 
   // Close profile popup and navigate back
   const handleCloseProfile = () => {
@@ -48,7 +105,7 @@ const Profile = () => {
 
   // Redirect to the upgrade plan section
   const handleUpgradePlan = () => {
-    navigate("/pricinglog?loggedIn=true"); // Redirect to the upgrade plan page
+    navigate("/pricinglog?loggedIn=true");
   };
 
   // Handle cancel subscription
@@ -59,23 +116,21 @@ const Profile = () => {
     if (confirmCancel) {
       // Perform cancellation logic (e.g., API call to cancel subscription)
       alert("Your subscription has been canceled.");
-      // Optionally, update the user's plan to "Free"
+      // Update the user's plan to "Free" and clear cache
       setUserData((prev) => ({ ...prev, plan: "Free", expiryDate: null }));
+      clearProfileCache();
     }
   };
 
   return (
     <div>
-      {/* Render the Dashboard in the background */}
       <Dashboard />
-
-      {/* Render the Profile Popup as an overlay */}
       <ProfilePopup
         isOpen={isProfileOpen}
         onClose={handleCloseProfile}
         userData={userData}
-        onUpgradePlan={handleUpgradePlan} // Pass the upgrade plan handler
-        onCancelSubscription={handleCancelSubscription} // Pass the cancel subscription handler
+        onUpgradePlan={handleUpgradePlan}
+        onCancelSubscription={handleCancelSubscription}
       />
     </div>
   );

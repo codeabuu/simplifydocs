@@ -33,18 +33,14 @@ function Pricing() {
               ? [
                   ...baseFeatures,
                   <span key="priority"><strong>Priority</strong> AI processing</span>,
-                  // <span key="team"><strong>Team</strong> collaboration (up to 5 members)</span>,
                   <span key="support"><strong>Dedicated</strong> 24/7 support</span>,
-                  // <span key="history"><strong>Extended</strong> chat history (12 months)</span>
                 ]
               : [
                   ...baseFeatures,
                   <span key="standard"><strong>Standard</strong> AI processing</span>,
-                  // <span key="limit"><strong>100</strong> analyses/month</span>,
-                  // <span key="history"><strong>30-day</strong> chat history</span>
                 ],
             cta: isYearly ? "Get Yearly" : "Get Monthly",
-            highlighted: isYearly, // Now highlighting yearly plan
+            highlighted: isYearly,
             isYearly
           };
         });
@@ -69,68 +65,68 @@ function Pricing() {
       {/* Close Button */}
       {isLoggedIn && (
         <button
-          className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full shadow-md hover:bg-gray-200 transition"
+          className="absolute top-4 right-4 bg-gray-100 p-1.5 rounded-full shadow-sm hover:bg-gray-200 transition"
           onClick={() => navigate('/dashboard')}
         >
-          <X className="w-6 h-6 text-gray-700" />
+          <X className="w-5 h-5 text-gray-700" />
         </button>
       )}
       
       {/* Pricing Header */}
-      <div className="hero-gradient py-24">
-        <div className="container">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6">
+      <div className="hero-gradient py-16 md:py-20">
+        <div className="container px-4 sm:px-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
             <span className="gradient-text">Simple and Transparent</span> Pricing
           </h1>
-          <p className="text-xl text-gray-600 text-center max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 text-center max-w-2xl mx-auto">
             Choose the plan that's right for you. All plans include access to our core AI features.
           </p>
         </div>
       </div>
 
       {/* Pricing Grid */}
-      <div className="py-24 -mt-24">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+      <div className="py-16 md:py-20 -mt-16 md:-mt-20">
+        <div className="container px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {pricingTiers.map((tier, index) => (
               <div
                 key={tier.id}
-                className={`p-8 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 ${
+                className={`p-6 rounded-xl transition-all duration-300 transform hover:-translate-y-1 border-2 ${
                   tier.highlighted
-                    ? 'gradient-bg text-white shadow-xl border-primary-500 scale-[1.02]'
-                    : 'bg-white text-gray-900 shadow-lg hover:shadow-xl border-gray-200'
+                    ? 'gradient-bg text-white shadow-lg border-primary-500'
+                    : 'bg-white text-gray-900 shadow-md hover:shadow-lg border-gray-200'
                 }`}
               >
                 {tier.highlighted && (
-                  <div className="absolute top-0 right-0 bg-primary-500 text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
+                  <div className="absolute top-0 right-0 bg-primary-500 text-white px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-medium">
                     MOST POPULAR
                   </div>
                 )}
                 
-                <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
-                <p className={tier.highlighted ? 'text-white/90' : 'text-gray-600'}>
+                <h3 className="text-xl font-bold mb-1.5">{tier.name}</h3>
+                <p className={`text-sm ${tier.highlighted ? 'text-white/90' : 'text-gray-600'}`}>
                   {tier.description}
                 </p>
                 
-                <div className="my-6">
-                  <span className="text-5xl font-bold">${tier.price}</span>
+                <div className="my-4">
+                  <span className="text-4xl font-bold">${tier.price}</span>
                   <span className={tier.highlighted ? 'text-white/90' : 'text-gray-600'}>
                     /{tier.period}
                   </span>
                   {tier.isYearly && (
-                    <div className="text-sm mt-1 text-primary-200">
+                    <div className="text-xs mt-1 text-primary-200">
                       ≈ ${Math.round(tier.price / 12 * 100) / 100}/month
                     </div>
                   )}
                 </div>
                 
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 mb-6">
                   {tier.features.map((feature, featureIndex) => (
                     <li key={`${tier.id}-${featureIndex}`} className="flex items-start">
-                      <CheckCircle2 className={`w-5 h-5 mt-0.5 mr-2 flex-shrink-0 ${
+                      <CheckCircle2 className={`w-4 h-4 mt-0.5 mr-2 flex-shrink-0 ${
                         tier.highlighted ? 'text-white' : 'text-primary-500'
                       }`} />
-                      <span>{feature}</span>
+                      <span className="text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -138,7 +134,7 @@ function Pricing() {
                 <button
                   onClick={() => handleCheckout(tier.id)}
                   disabled={loadingTier === tier.id}
-                  className={`w-full py-3 rounded-lg transition-all duration-300 flex items-center justify-center font-medium ${
+                  className={`w-full py-2.5 rounded-md transition-all duration-300 flex items-center justify-center font-medium text-sm ${
                     tier.highlighted
                       ? 'bg-white text-primary-600 hover:bg-primary-50'
                       : 'gradient-bg text-white hover:opacity-90'
@@ -147,7 +143,7 @@ function Pricing() {
                   {loadingTier === tier.id ? (
                     <>
                       <svg 
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-current" 
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" 
                         xmlns="http://www.w3.org/2000/svg" 
                         fill="none" 
                         viewBox="0 0 24 24"
@@ -165,7 +161,7 @@ function Pricing() {
             ))}
           </div>
           
-          <div className="mt-12 text-center text-gray-500">
+          <div className="mt-8 text-center text-gray-500 text-sm">
             <p>Need more? <button className="text-primary-500 hover:underline" onClick={() => navigate('/contact')}>Contact us</button> for enterprise solutions</p>
           </div>
         </div>

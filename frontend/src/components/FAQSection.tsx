@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const faqs = [
   {
@@ -49,24 +50,24 @@ const FAQSection = () => {
   const categories = ["All", ...new Set(faqs.map(faq => faq.category))];
 
   return (
-    <div className="py-24 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+    <div className="py-16 md:py-4 bg-gradient-to-b from-gray-50 to-white">
+      <div className="container px-4 sm:px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-3">
             <span className="gradient-text">FAQs</span> & Support
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Get answers to common questions about AskAnalytIQ
           </p>
         </div>
 
         {/* Category filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setFilter(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 filter === category
                   ? 'bg-primary-500 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
@@ -77,38 +78,38 @@ const FAQSection = () => {
           ))}
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-3xl mx-auto space-y-3">
           {filteredFAQs.map((faq, index) => (
             <div
               key={index}
-              className={`bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 transition-all duration-300 ${
+              className={`bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 transition-all duration-300 ${
                 activeIndex === index ? 'shadow-md' : 'hover:shadow-md'
               }`}
             >
               <button
-                className="w-full flex items-center justify-between p-6 text-left"
+                className="w-full flex items-center justify-between p-4 md:p-5 text-left"
                 onClick={() => toggleFAQ(index)}
               >
                 <div className="flex items-start">
-                  <HelpCircle className="w-5 h-5 text-primary-500 mr-4 mt-1 flex-shrink-0" />
-                  <h3 className="text-xl font-semibold text-gray-900">
+                  <HelpCircle className="w-4 h-4 text-primary-500 mr-3 mt-0.5 flex-shrink-0" />
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900">
                     {faq.question}
                   </h3>
                 </div>
                 {activeIndex === index ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500 ml-4" />
+                  <ChevronUp className="w-4 h-4 text-gray-500 ml-3" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500 ml-4" />
+                  <ChevronDown className="w-4 h-4 text-gray-500 ml-3" />
                 )}
               </button>
               
               <div
-                className={`px-6 pb-6 pl-16 transition-all duration-300 ${
+                className={`px-4 pb-4 pl-12 transition-all duration-300 ${
                   activeIndex === index ? 'block' : 'hidden'
                 }`}
               >
                 {faq.answer.split('\n\n').map((paragraph, i) => (
-                  <p key={i} className="text-gray-600 mb-4">
+                  <p key={i} className="text-gray-600 mb-3 text-sm">
                     {paragraph}
                   </p>
                 ))}
@@ -117,13 +118,16 @@ const FAQSection = () => {
           ))}
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-gray-600 mb-6">
+        <div className="text-center mt-12">
+          <p className="text-gray-600 mb-4 text-sm">
             Still have questions? We're here to help.
           </p>
-          <button className="px-8 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium">
+          <Link 
+            to="/contact" 
+            className="inline-block px-6 py-2.5 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors font-medium text-sm"
+          >
             Contact Support
-          </button>
+          </Link>
         </div>
       </div>
     </div>

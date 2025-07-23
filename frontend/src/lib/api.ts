@@ -1,9 +1,18 @@
-import axios from 'axios';
+import axios, {AxiosError} from 'axios';
 import path from 'path';
 import { blob } from 'stream/consumers';
 // import { Navigate, useNavigate } from "react-router-dom";
 
 const API_BASE_URL = 'https://askanalytiq.onrender.com/';
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('authToken');
+  return {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json'
+  };
+};
+
 
 export const uploadSpreadsheet = async (
   file: File,
@@ -459,3 +468,80 @@ export const fetchUserProfile = async () => {
     throw error;
   }
 };
+
+export const checkSubscriptionStatus = async () => {
+  try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/check-subscription-status/`,
+        { headers: getAuthHeaders() }
+      );
+      return {
+        isSubscribed: response.data.is_subscribed,
+        error: null
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          isSubscribed: false,
+          error: error.response?.data || error.message
+        };
+      }
+      return {
+        isSubscribed: false,
+        error: 'Unknown error occurred'
+      };
+    }
+  };
+
+  const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+  transformRequest: [
+    (data) => JSON.stringify(data), // Explicit serialization
+  ],
+});
+
+
+const handleError = (error: unknown): void => {
+  if (axios.isAxiosError(error)) {
+    const err = error as AxiosError;
+    console.error('API Error:', err.response?.data || err.message);
+  } else {
+    console.error('Unexpected Error:', error);
+  }
+};
+
+export const sendContactMessage = async (formData: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<{ success: boolean; message?: string; error?: string }> => {
+  try {
+    const response = await apiClient.post('/api/contact/', formData);
+    
+    // Return the complete success response
+    return {
+      success: response.data.success || false,
+      message: response.data.message
+    };
+  } catch (error) {
+    handleError(error);
+    
+    if (axios.isAxiosError(error) && error.response?.data) {
+      return {
+        success: false,
+        error: error.response.data.error || "Failed to send message"
+      };
+    }
+    
+    return {
+      success: false,
+      error: "An unexpected error occurred"
+    };
+  }
+};
+  

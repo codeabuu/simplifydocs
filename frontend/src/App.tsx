@@ -19,6 +19,9 @@ import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import ForgotPassword from "./components/Forgotpass";
 import ResetPassword from "./components/Resetform";
 import Profile from "./pages/Profile";
+import TermsAndConditions from "./pages/terms";
+import PrivacyPolicy from "./pages/privacy";
+import Contact from "./pages/contact";
 
 const queryClient = new QueryClient();
 
@@ -45,7 +48,13 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/confirm-email/:key" element={<ConfirmEmail />} />
           <Route path="/confirm-email/error" element={<ConfirmEmailError />} />
+          <Route path="/contact" element= {<Layout><Contact /></Layout>}/>
 
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+
+          {/* Public Routes */}
+          {/* Fallback Routes */}
           <Route path="/check-email" element={<CheckEmail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
