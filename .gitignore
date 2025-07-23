@@ -1,5 +1,5 @@
 .env
 myvenv
 simpai/media
-__pycache__
+__pycache__/
 *.pyc
