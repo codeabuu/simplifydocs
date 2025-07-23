@@ -99,3 +99,61 @@ def paystack_webhook(request):
             )
 
     return JsonResponse({'error': 'Invalid method'}, status=405)
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import status
+from django.core.mail import send_mail
+from rest_framework.permissions import AllowAny
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def contact_form(request):
+    """
+    Handle contact form submissions.
+    """
+    if request.method == "POST":
+        try:
+            data = request.data
+            name = data.get('name')
+            email = data.get('email')
+            message = data.get('message')
+            subject = data.get('subject')
+
+            if not all([name, email, message, subject]):
+                return Response(
+                    {"success": False, "error": "All fields are required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            full_message = f"""
+            New contact form submission:
+            Name: {name}
+            Email: {email}
+            Subject: {subject}
+            Message: {message}
+            """
+            
+            send_mail(
+                subject=f"Contact Form Submission: {subject}",
+                message=full_message,
+                from_email="sjepjenny@gmail.com",
+                recipient_list=["sjepjenny@gmail.com"],
+                fail_silently=False
+            )
+
+            return Response(
+                {"success": True, "message": "Your message has been sent successfully."},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"success": False, "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    return Response(
+        {"success": False, "error": "Invalid request method"},
+        status=status.HTTP_405_METHOD_NOT_ALLOWED
+    )
