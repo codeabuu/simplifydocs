@@ -40,7 +40,7 @@ SECRET_KEY = 'django-insecure-klh^+(_78yw90o5rw%t_hkh7v%$#roox3dz)&3zqnmq2syc7w)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 BASE_URL = config("BASE_URL", default=None)
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "fdacf99bd21f.ngrok-free.app"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "fdacf99bd21f.ngrok-free.app", "simpai.fly.dev"]
 
 
 # Application definition
@@ -98,6 +98,8 @@ REST_AUTH = {
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://simplifydocs.vercel.app",
+    "http://simplifydocs.vercel.app",
+    "https://simpai.fly.dev",
   # Allow requests from your frontend
 ]
 
@@ -106,7 +108,7 @@ PASSWORD_RESET_TIMEOUT = 86400  # Token valid for 24 hours
 CSRF_COOKIE_NAME = "csrftoken"
 
 SESSION_COOKIE_SECURE = False  # Set to True in production
-CSRF_COOKIE_SECURE = False 
+CSRF_COOKIE_SECURE = True 
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 

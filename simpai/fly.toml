@@ -1,0 +1,40 @@
+# fly.toml app configuration file generated for simpai on 2025-07-24T16:15:50-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'simpai'
+primary_region = 'jnb'
+console_command = '/code/manage.py shell'
+
+[build]
+
+[deploy]
+  release_command = 'python manage.py migrate --noinput'
+
+[env]
+  PORT = '8000'
+  BASE_URL = "https://simpai.fly.dev"
+  EMAIL_HOST = "smtp.gmail.com"
+  EMAIL_PORT = "587"
+  EMAIL_HOST_USER = "sjepjenny@gmail.com"
+  EMAIL_USE_TLS = "True"
+  EMAIL_USE_SSL = "False"
+  ADMIN_USER_EMAIL = "qasenator@gmail.com"
+  ADMIN_USER_NAME = "Admin User"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+[processes]
+  app = "gunicorn --bind :8000 --workers 2 simpai.wsgi"
