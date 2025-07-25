@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://askanalytiq.onrender.com/';
+const API_BASE_URL = 'https://simpai.fly.dev/';
 
 const CheckoutStart = () => {
   const navigate = useNavigate();

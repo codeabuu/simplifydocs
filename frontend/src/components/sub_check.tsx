@@ -10,7 +10,7 @@ const SubscriptionCheck = ({ children }) => {
     useEffect(() => {
         const checkSubscription = async () => {
             try {
-                const response = await axios.get('https://askanalytiq.onrender.com/api/check-subscription-status/', {
+                const response = await axios.get('https://simpai.fly.dev/api/check-subscription-status/', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                     }

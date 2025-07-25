@@ -19,7 +19,7 @@ const ConfirmEmail = () => {
       try {
         // Send the key to the backend for verification
         const response = await axios.post(
-          "https://askanalytiq.onrender.com/api/confirm-email/",
+          "https://simpai.fly.dev/api/confirm-email/",
           { key },
         );
 

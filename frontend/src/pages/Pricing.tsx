@@ -20,7 +20,7 @@ function Pricing() {
             <span key="charts"><strong>Advanced</strong> chart generation (70+ chart types)</span>,
             <span key="updates"><strong>Early access</strong> to new features</span>
           ];
-
+          
           return {
             id: tier.id,
             name: isYearly ? "Yearly Plan" : "Monthly Plan",

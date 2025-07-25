@@ -3,7 +3,7 @@ import path from 'path';
 import { blob } from 'stream/consumers';
 // import { Navigate, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = 'https://askanalytiq.onrender.com/';
+const API_BASE_URL = 'https://simpai.fly.dev/';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');

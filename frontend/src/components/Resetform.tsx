@@ -26,7 +26,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `https://askanalytiq.onrender.com/api/password-reset/reset/${token}/`,
+        `https://simpai.fly.dev/api/password-reset/reset/${token}/`,
         { new_password: newPassword }
       );
       setMessage('Password reset successfully.');

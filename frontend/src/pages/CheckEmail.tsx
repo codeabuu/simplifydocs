@@ -18,7 +18,7 @@ const CheckEmail = () => {
 
     try {
       const response = await axios.get(
-        "https://askanalytiq.onrender.com/api/auth/resend-confirmation-email/",
+        "https://simpai.fly.dev/api/auth/resend-confirmation-email/",
         { params: { email } }
       );
 
