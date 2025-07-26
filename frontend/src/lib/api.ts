@@ -472,7 +472,7 @@ export const fetchUserProfile = async () => {
 export const checkSubscriptionStatus = async () => {
   try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/check-subscription-status/`,
+        `${API_BASE_URL}api/check-subscription-status/`,
         { headers: getAuthHeaders() }
       );
       return {
