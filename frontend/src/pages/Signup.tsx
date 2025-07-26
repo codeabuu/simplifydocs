@@ -112,11 +112,13 @@ const Signup = () => {
 
       <div className="glass p-10 rounded-2xl">
         <div className="text-center mb-8">
-          <img
-            src="/homelogo-preview.png"
-            alt="AskAnalytIQ Logo"
-            className="mx-auto mb-4 h-auto w-52"
-          />
+          <Link to="/" className="inline-flex items-center">
+            <img
+              src="/homelogo-preview.png"
+              alt="AskAnalytIQ Logo"
+              className="mx-auto mb-4 h-auto w-52"
+            />
+          </Link>
           <h1 className="text-3xl font-bold text-gray-900">Create an Account</h1>
           <p className="text-gray-600 mt-2">
             Please sign up to get started
