@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom'; // Import Link for navigation
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -13,7 +14,7 @@ const ForgotPassword = () => {
     setMessage('');
 
     try {
-      const response = await axios.post('https://simpai.fly.dev/api/password-reset/request/', { email });
+      const response = await axios.post(`${API_BASE_URL}/api/password-reset/request/`, { email });
       setMessage('Password reset email sent. Check your inbox.');
     } catch (error) {
       setMessage('Error sending password reset email. Please check your entries and try again.');

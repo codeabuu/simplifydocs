@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import { Eye, EyeOff } from 'lucide-react'; // Import Eye and EyeOff icons
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const ResetPassword = () => {
   const { token } = useParams<{ token: string }>();
   const [newPassword, setNewPassword] = useState('');
@@ -26,7 +27,7 @@ const ResetPassword = () => {
 
     try {
       const response = await axios.post(
-        `https://simpai.fly.dev/api/password-reset/reset/${token}/`,
+        `${API_BASE_URL}/api/password-reset/reset/${token}/`,
         { new_password: newPassword }
       );
       setMessage('Password reset successfully.');

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const ConfirmEmail = () => {
   const { key } = useParams<{ key: string }>(); // Extract the key from the URL
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ const ConfirmEmail = () => {
       try {
         // Send the key to the backend for verification
         const response = await axios.post(
-          "https://simpai.fly.dev/api/confirm-email/",
+          `${API_BASE_URL}/api/confirm-email/`,
           { key },
         );
 

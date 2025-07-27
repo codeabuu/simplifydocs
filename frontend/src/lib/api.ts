@@ -3,7 +3,7 @@ import path from 'path';
 import { blob } from 'stream/consumers';
 // import { Navigate, useNavigate } from "react-router-dom";
 
-const API_BASE_URL = 'https://simpai.fly.dev/';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');

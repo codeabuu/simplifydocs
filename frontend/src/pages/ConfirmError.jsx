@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const ConfirmEmailError = () => {
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
@@ -10,7 +12,7 @@ const ConfirmEmailError = () => {
     const handleResendConfirmation = async () => {
         try {
             const response = await axios.get(
-                "https://simpai.fly.dev/api/auth/resend-confirmation-email/",
+                `${API_BASE_URL}/api/auth/resend-confirmation-email/`,
                 { params: { email } }
             );
 

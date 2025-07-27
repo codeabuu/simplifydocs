@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const SubscriptionCheck = ({ children }) => {
     const [hasSubscription, setHasSubscription] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -10,7 +11,7 @@ const SubscriptionCheck = ({ children }) => {
     useEffect(() => {
         const checkSubscription = async () => {
             try {
-                const response = await axios.get('https://simpai.fly.dev/api/check-subscription-status/', {
+                const response = await axios.get(`${API_BASE_URL}/api/check-subscription-status/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                     }
