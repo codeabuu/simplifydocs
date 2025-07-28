@@ -3,3 +3,5 @@ myvenv
 simpai/media
 __pycache__
 *.pyc
+fly.toml
+Dockerfile
