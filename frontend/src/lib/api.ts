@@ -56,7 +56,7 @@ export const uploadSpreadsheet = async (
 
 export const analyzeData = async (fileId: string,) => {
     const token = localStorage.getItem('authToken');
-    const response = await axios.post(`${API_BASE_URL}/csv/analyze/`, {
+    const response = await axios.post(`${API_BASE_URL}csv/analyze/`, {
         file_id: fileId,
     }, {
       headers: {
@@ -68,7 +68,7 @@ export const analyzeData = async (fileId: string,) => {
 
 export const generateCharts = async (fileId: string, sampleSize: number) => {
     const token = localStorage.getItem('authToken');
-    const response = await axios.post(`${API_BASE_URL}/csv/chart/`, {
+    const response = await axios.post(`${API_BASE_URL}csv/chart/`, {
       file_id: fileId,
       sample_size: sampleSize,
     }, {
@@ -188,7 +188,7 @@ export const uploadPdf = async (
   }
 
   const response = await axios.post(
-    `${API_BASE_URL}/summarisation/upload/`,
+    `${API_BASE_URL}summarisation/upload/`,
     formData,
     {
       headers: {
@@ -214,7 +214,7 @@ export const askCustom = async (
   custom_prompt: string,
   options?: {signal?: AbortSignal}): Promise<Blob> => {
   const token = localStorage.getItem('authToken');
-  const response = await axios.post(`${API_BASE_URL}/summarisation/ask/`, {
+  const response = await axios.post(`${API_BASE_URL}summarisation/ask/`, {
     file_id: fileId,
     custom_prompt,
   },
@@ -232,7 +232,7 @@ return response.data
 export const summarizePdf = async (fileId: string, promptKey: string, options?: { signal?: AbortSignal }): Promise<Blob> => {
   const token = localStorage.getItem('authToken');
   const response = await axios.post(
-    `${API_BASE_URL}/summarisation/summarize/`,
+    `${API_BASE_URL}summarisation/summarize/`,
     {
       file_id: fileId,
       prompt_key: promptKey,
@@ -255,7 +255,7 @@ export const askGPT = async (question: string) => {
   }
 
   try {
-    const response = await axios.post(`${API_BASE_URL}/gpt/ask/`, 
+    const response = await axios.post(`${API_BASE_URL}gpt/ask/`, 
       { question },
       {
         headers: {
@@ -316,7 +316,7 @@ export const logoutUser = async () => {
 };
 
 export const getUser = async (token: string) => {
-  const response = await axios.get(`${API_BASE_URL}/api/auth/user/`, {
+  const response = await axios.get(`${API_BASE_URL}api/auth/user/`, {
     headers: {
       Authorization: `Token ${token}`,
     },

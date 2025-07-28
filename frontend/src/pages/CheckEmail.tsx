@@ -20,7 +20,7 @@ const CheckEmail = () => {
 
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/auth/resend-confirmation-email/`,
+        `${API_BASE_URL}api/auth/resend-confirmation-email/`,
         { params: { email } }
       );
 

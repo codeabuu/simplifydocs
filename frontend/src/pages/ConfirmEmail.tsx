@@ -20,7 +20,7 @@ const ConfirmEmail = () => {
       try {
         // Send the key to the backend for verification
         const response = await axios.post(
-          `${API_BASE_URL}/api/confirm-email/`,
+          `${API_BASE_URL}api/confirm-email/`,
           { key },
         );
 

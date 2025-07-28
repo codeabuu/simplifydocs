@@ -11,7 +11,7 @@ const SubscriptionCheck = ({ children }) => {
     useEffect(() => {
         const checkSubscription = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/check-subscription-status/`, {
+                const response = await axios.get(`${API_BASE_URL}api/check-subscription-status/`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                     }
