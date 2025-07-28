@@ -208,7 +208,7 @@ from allauth.account.adapter import DefaultAccountAdapter
 class CustomAccountAdapter(DefaultAccountAdapter):
     def get_email_confirmation_url(self, request, emailconfirmation):
         # Construct the frontend URL for email confirmation
-        frontend_url = "https://simplifydocs.vercel.app/confirm-email/"  # Your frontend URL
+        frontend_url = "https://simplifydocs.vercel.app/confirm-email/"
         key = emailconfirmation.key
         return f"{frontend_url}{key}/"
 
