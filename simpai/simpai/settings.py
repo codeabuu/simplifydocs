@@ -1,13 +1,15 @@
 from pathlib import Path
 import os
+from urllib.parse import urljoin
 from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-# AUTH_USER_MODEL = "customers.CustomUser"
-# settings.py
-FRONTEND_URL = "https://simplifydocs.vercel.app/"
-LOGIN_URL = "https://simplifydocs.vercel.app/login/"
+
+
+FRONTEND_URL = config("FRONTEND_URL")
+BACKEND_URL = config("BASE_URL", default=None)
+LOGIN_URL = urljoin(FRONTEND_URL, '/login')
 PASSWORD_RESET_TIMEOUT = 604800
 
 
@@ -26,18 +28,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 TEMP_DIR = os.path.join(MEDIA_ROOT, 'temp')
 
-# Maximum size for uploaded files (in bytes)
-# settings.py
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20MB
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-klh^+(_78yw90o5rw%t_hkh7v%$#roox3dz)&3zqnmq2syc7w)'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 BASE_URL = config("BASE_URL", default=None)
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "fdacf99bd21f.ngrok-free.app", "simpai.fly.dev"]
@@ -86,21 +81,22 @@ REST_FRAMEWORK = {
     ],
 }
 
+EMAIL_CONFIRMATION_URL = urljoin(FRONTEND_URL, '/confirm-email/{key}')
+PASSWORD_RESET_CONFIRM = urljoin(FRONTEND_URL, '/reset-password-confirm/{uid}/{token}/')
+
 REST_AUTH = {
     'USE_JWT': False,  # Set to True if you want to use JWT instead of tokens
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
     'REGISTER_SERIALIZER': 'profiles.serializers.CustomRegisterSerializer',
-    'EMAIL_CONFIRMATION_URL': 'https://simplifydocs.vercel.app/confirm-email/{key}',
-    'PASSWORD_RESET_CONFIRM': 'https://simplifydocs.vercel.app/reset-password-confirm/{uid}/{token}/',
+    'EMAIL_CONFIRMATION_URL': EMAIL_CONFIRMATION_URL,
+    'PASSWORD_RESET_CONFIRM': PASSWORD_RESET_CONFIRM,
 }
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "https://simplifydocs.vercel.app",
-    "http://simplifydocs.vercel.app",
-    "https://simpai.fly.dev",
-  # Allow requests from your frontend
+    FRONTEND_URL,
+    BACKEND_URL,
 ]
 
 PASSWORD_RESET_TIMEOUT = 86400  # Token valid for 24 hours
@@ -113,19 +109,6 @@ CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS.copy()
 
 CORS_ALLOW_CREDENTIALS = True
-
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379/1",  # Same as non-Docker setup
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#             "MAX_ENTRIES": 1000,
-#             "CULL_FREQUENCY": 3,
-#         },
-#         "KEY_PREFIX": "spreadsheet_app"
-#     }
-# }
 
 
 MIDDLEWARE = [
@@ -161,16 +144,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'simpai.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASE_URL = config("DATABASE_URL", default=None)
 
 if DATABASE_URL is not None:
@@ -183,8 +156,6 @@ if DATABASE_URL is not None:
         )
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -243,33 +214,5 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-# STATIC_URL = None
-
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-# STATICFILES_BASE_DIR = BASE_DIR / "staticfiles"
-# STATICFILES_VENDOR_DIR = STATICFILES_BASE_DIR / "vendors"
-
-# STATICFILES_DIRS = []
-
-# STATIC_ROOT = None
-
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "django.core.files.storage.FileSystemStorage",
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
-# if not DEBUG:
-#     STATIC_ROOT = BASE_DIR / "prod-cdn"
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -14,7 +14,6 @@ console_command = '/code/manage.py shell'
 
 [env]
   PORT = '8000'
-  BASE_URL = "https://simpai.fly.dev"
   EMAIL_HOST = "smtp.gmail.com"
   EMAIL_PORT = "587"
   EMAIL_HOST_USER = "sjepjenny@gmail.com"
