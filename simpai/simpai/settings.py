@@ -74,6 +74,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',  # Optional, for browsable API
     ],
@@ -86,7 +87,7 @@ EMAIL_CONFIRMATION_URL = urljoin(FRONTEND_URL, '/confirm-email/{key}')
 PASSWORD_RESET_CONFIRM = urljoin(FRONTEND_URL, '/reset-password-confirm/{uid}/{token}/')
 
 REST_AUTH = {
-    'USE_JWT': False,  # Set to True if you want to use JWT instead of tokens
+    'USE_JWT': False,
     'TOKEN_MODEL': 'rest_framework.authtoken.models.Token',
     'LOGIN_SERIALIZER': 'dj_rest_auth.serializers.LoginSerializer',
     'REGISTER_SERIALIZER': 'profiles.serializers.CustomRegisterSerializer',
