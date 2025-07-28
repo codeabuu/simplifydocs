@@ -35,7 +35,8 @@ SECRET_KEY = 'django-insecure-klh^+(_78yw90o5rw%t_hkh7v%$#roox3dz)&3zqnmq2syc7w)
 
 DEBUG = True
 BASE_URL = config("BASE_URL", default=None)
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "fdacf99bd21f.ngrok-free.app", "simpai.fly.dev"]
+MY_HOST = config("MY_HOST", default=None)
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", MY_HOST]
 
 
 # Application definition
