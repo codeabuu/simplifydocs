@@ -122,7 +122,7 @@ const TermsAndConditions: React.FC = () => {
         <section className="mt-4 mb-8">
           <h2 className="text-xl font-semibold">13. Contact Us</h2>
           <p>
-            If you have any questions, please contact us at <a href="mailto:support@askanalytiq.com" className="text-blue-600 underline">support@example.com</a>.
+            If you have any questions, please contact us at <a href="mailto:support@askanalytiq.com" className="text-blue-600 underline">support@askanalytiq.com</a>.
           </p>
         </section>
       </div>

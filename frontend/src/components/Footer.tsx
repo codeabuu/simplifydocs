@@ -18,16 +18,16 @@ const Footer = () => {
               AI-powered data analysis that transforms complex information into actionable insights.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="Twitter">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="Twitter">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="LinkedIn">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="GitHub">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="GitHub">
                 <Github className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="Facebook">
+              <a href="/" className="text-gray-400 hover:text-white transition-colors transform hover:scale-105" aria-label="Facebook">
                 <MessageSquare className="w-5 h-5" />
               </a>
             </div>
@@ -42,8 +42,8 @@ const Footer = () => {
             <ul className="space-y-3">
               <li><a href="#features" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Features</a></li>
               <li><a href="/pricing" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Pricing</a></li>
-              <li><a href="#demo" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Live Demo</a></li>
-              <li><a href="#roadmap" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Roadmap</a></li>
+              <li><a href="/" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Live Demo</a></li>
+              {/* <li><a href="#roadmap" className="text-gray-400 hover:text-white transition-colors hover:underline text-sm">Roadmap</a></li> */}
             </ul>
           </div>
 
