@@ -48,15 +48,15 @@ const ResetPassword = () => {
       {/* Rectangular Box (Card) */}
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <div className="space-y-6">
-          <div>
-            <Link to="/" className="inline-flex items-center">
-          <img
-            src="/homelogo-preview.png"
-            alt="AskAnalytIQ Logo"
-            className="h-auto w-52"
-          />
-        </Link>
-            <p className="mt-2 text-center text-sm text-gray-600">
+          <div className="flex flex-col items-center">
+                      <Link to="/" className="mb-6">
+                        <img
+                          src="/homelogo-preview.png"
+                          alt="AskAnalytIQ Logo"
+                          className="h-auto w-48 mx-auto"
+                        />
+                      </Link>
+            <p className="mt-2 text-center text-2xl text-gray-600 font-bol">
               Change My Password
             </p>
           </div>
