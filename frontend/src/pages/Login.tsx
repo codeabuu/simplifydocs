@@ -69,7 +69,7 @@ const Login = () => {
                 className="mx-auto mb-4 h-auto w-52"
               />
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Sign in to SimpAI</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Login in to AskAnalytIQ</h1>
             <p className="text-gray-600 mt-2">Please sign in to your account</p>
           </div>
 
