@@ -56,7 +56,7 @@ const ResetPassword = () => {
                           className="h-auto w-48 mx-auto"
                         />
                       </Link>
-            <p className="mt-2 text-center text-2xl text-gray-600 font-bol">
+            <p className="mt-2 text-center text-2xl text-gray-600 font-bold">
               Change My Password
             </p>
           </div>
