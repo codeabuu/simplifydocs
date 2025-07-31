@@ -49,9 +49,13 @@ const ResetPassword = () => {
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <div className="space-y-6">
           <div>
-            <h2 className="text-center text-3xl font-extrabold text-gray-900">
-              SimpAI
-            </h2>
+            <Link to="/" className="inline-flex items-center">
+          <img
+            src="/homelogo-preview.png"
+            alt="AskAnalytIQ Logo"
+            className="h-auto w-52"
+          />
+        </Link>
             <p className="mt-2 text-center text-sm text-gray-600">
               Change My Password
             </p>
