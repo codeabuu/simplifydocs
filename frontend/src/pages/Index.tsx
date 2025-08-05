@@ -10,13 +10,18 @@ import Footer from "@/components/Footer";
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL;
 const Index = () => {
   useEffect(() => {
-    fetch(`${API_BASE_URL}ping/`)
-      .then(() => {
-        console.log("Backend wake-up ping sent");
-      })
-      .catch((err) => {
-        console.error("Ping failed:", err);
-      });
+    const lastPing = localStorage.getItem("lastBackendPing");
+    const now = Date.now();
+
+    if (!lastPing || now - parseInt(lastPing) > 10 * 60 * 1000) {
+      fetch(`${API_BASE_URL}ping/`)
+        .then(() => {
+          console.log("Backend wake-up ping sent");
+        })
+        .catch((err) => {
+          console.error("Ping failed:", err);
+        });
+    }
   }, []);
   return (
     <div className="min-h-screen bg-white">
