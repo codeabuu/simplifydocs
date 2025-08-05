@@ -13,15 +13,20 @@ const Index = () => {
     const lastPing = localStorage.getItem("lastBackendPing");
     const now = Date.now();
 
-    if (!lastPing || now - parseInt(lastPing) > 10 * 60 * 1000) {
+    const TEN_MINUTES = 10 * 60 * 1000;
+
+    if (!lastPing || now - parseInt(lastPing, 10) > TEN_MINUTES) {
       fetch(`${API_BASE_URL}ping/`)
         .then(() => {
           console.log("Backend wake-up ping sent");
+          localStorage.setItem("lastBackendPing", now.toString());
         })
         .catch((err) => {
           console.error("Ping failed:", err);
         });
-    }
+      }else {
+        console.log("Skipping backend ping, last ping was recent");
+      }
   }, []);
   return (
     <div className="min-h-screen bg-white">
