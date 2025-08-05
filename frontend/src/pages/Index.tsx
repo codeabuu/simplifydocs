@@ -13,9 +13,9 @@ const Index = () => {
     const lastPing = localStorage.getItem("lastBackendPing");
     const now = Date.now();
 
-    const TEN_MINUTES = 10 * 60 * 1000;
+    const THIRTY_MINUTES = 30 * 60 * 1000;
 
-    if (!lastPing || now - parseInt(lastPing, 10) > TEN_MINUTES) {
+    if (!lastPing || now - parseInt(lastPing, 10) > THIRTY_MINUTES) {
       fetch(`${API_BASE_URL}ping/`)
         .then(() => {
           console.log("Backend wake-up ping sent");
